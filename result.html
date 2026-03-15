@@ -90,7 +90,7 @@ html+="<tr><th>순위</th><th>이메일</th><th>총점</th><th>지망</th></tr>"
 
 data.forEach(r=>{
 html+=`
-<tr onclick="showStudent('${r.email}')" style="cursor:pointer">
+<tr class="student" data-email="${r.email}" style="cursor:pointer">
 <td>${r.rank}</td>
 <td>${r.email}</td>
 <td>${r.total}</td>
@@ -102,6 +102,12 @@ html+=`
 html+="</table>";
 
 document.getElementById("detail").innerHTML=html;
+
+document.querySelectorAll(".student").forEach(el=>{
+el.addEventListener("click",function(){
+showStudent(this.dataset.email);
+});
+});
 
 });
 
