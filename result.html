@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>지원 결과</title>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+</head>
+
+<body>
+
+<h2>내 지원 결과</h2>
+
+<div id="g_id_onload"
+data-client_id="692455502517-52tj203gjltpj5qo1hsa4hfn706o1ogb.apps.googleusercontent.com"
+data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin"></div>
+
+<br>
+
+<table border="1">
+
+<thead>
+
+<tr>
+<th>대학</th>
+<th>지망</th>
+<th>총점</th>
+<th>순위</th>
+<th>결과</th>
+</tr>
+
+</thead>
+
+<tbody id="resultTable">
+
+</tbody>
+
+</table>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
+
+let userEmail="";
+
+function handleCredentialResponse(response){
+
+let data = JSON.parse(atob(response.credential.split('.')[1]));
+
+userEmail = data.email;
+
+if(!userEmail.endsWith("@khu.ac.kr")){
+
+alert("경희대학교 이메일만 로그인 가능합니다");
+
+location.reload();
+
+}
+
+loadResults();
+
+}
+
+function loadResults(){
+
+fetch(API_URL + "?action=myresults&email=" + userEmail)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let table=document.getElementById("resultTable");
+
+table.innerHTML="";
+
+data.forEach(r=>{
+
+let row=`
+<tr>
+<td>${r.university}</td>
+<td>${r.choice_rank}</td>
+<td>${r.total}</td>
+<td>${r.rank}</td>
+<td>${r.result}</td>
+</tr>
+`;
+
+table.innerHTML+=row;
+
+});
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
