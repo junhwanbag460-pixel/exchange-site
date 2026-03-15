@@ -169,66 +169,97 @@ return true;
 function calculateTotal(){
 
 let gpa = parseFloat(document.getElementById("gpa").value);
-let lang = parseInt(document.getElementById("lang_score").value);
+let score = parseFloat(document.getElementById("lang_score").value);
 let type = document.getElementById("language").value;
 
 /* GPA 점수 */
 
-let gpaScore = (gpa / 4.3) * 50;
+let gpaScore = (gpa/4.3) * 50;
 
 /* 환산표 */
 
-const conversionTable = [
-{inst:677, toefl:120},
-{inst:673, toefl:120},
-{inst:670, toefl:119},
-{inst:667, toefl:118},
-{inst:663, toefl:117},
-{inst:660, toefl:116},
-{inst:657, toefl:115},
-{inst:653, toefl:114},
-{inst:650, toefl:113},
-{inst:647, toefl:112},
-{inst:643, toefl:111},
-{inst:640, toefl:110},
-{inst:637, toefl:109},
-{inst:633, toefl:108},
-{inst:630, toefl:107},
-{inst:627, toefl:106},
-{inst:623, toefl:105},
-{inst:620, toefl:104},
-{inst:617, toefl:103},
-{inst:613, toefl:102},
-{inst:610, toefl:101},
-{inst:607, toefl:100}
+const table = [
+{inst:677,toefl:120,ielts:9},
+{inst:673,toefl:120,ielts:null},
+{inst:670,toefl:119,ielts:null},
+{inst:667,toefl:118,ielts:null},
+{inst:663,toefl:117,ielts:null},
+{inst:657,toefl:116,ielts:null},
+{inst:653,toefl:115,ielts:null},
+{inst:650,toefl:114,ielts:null},
+{inst:647,toefl:113,ielts:null},
+{inst:643,toefl:112,ielts:8},
+{inst:640,toefl:111,ielts:null},
+{inst:637,toefl:110,ielts:null},
+{inst:633,toefl:109,ielts:null},
+{inst:630,toefl:108,ielts:null},
+{inst:627,toefl:107,ielts:7.5},
+{inst:623,toefl:106,ielts:null},
+{inst:620,toefl:105,ielts:null},
+{inst:617,toefl:104,ielts:null},
+{inst:613,toefl:103,ielts:null},
+{inst:610,toefl:102,ielts:null},
+{inst:607,toefl:101,ielts:null},
+{inst:603,toefl:100,ielts:null},
+{inst:600,toefl:99,ielts:7},
+{inst:597,toefl:98,ielts:null},
+{inst:593,toefl:97,ielts:null},
+{inst:590,toefl:96,ielts:null},
+{inst:587,toefl:95,ielts:null},
+{inst:587,toefl:94,ielts:null},
+{inst:583,toefl:93,ielts:null},
+{inst:580,toefl:92,ielts:6.5},
+{inst:577,toefl:91,ielts:null},
+{inst:577,toefl:90,ielts:null},
+{inst:573,toefl:89,ielts:null},
+{inst:570,toefl:88,ielts:null},
+{inst:567,toefl:87,ielts:null},
+{inst:567,toefl:86,ielts:null},
+{inst:563,toefl:85,ielts:null},
+{inst:563,toefl:84,ielts:null},
+{inst:560,toefl:83,ielts:null},
+{inst:557,toefl:82,ielts:null},
+{inst:553,toefl:81,ielts:null},
+{inst:550,toefl:80,ielts:6},
+{inst:550,toefl:79,ielts:null},
+{inst:547,toefl:78,ielts:null},
+{inst:547,toefl:77,ielts:null},
+{inst:543,toefl:76,ielts:null},
+{inst:540,toefl:75,ielts:null},
+{inst:537,toefl:74,ielts:null},
+{inst:533,toefl:73,ielts:null},
+{inst:533,toefl:72,ielts:null}
 ];
 
 /* TOEFL 환산 */
 
-let toeflEquivalent = 0;
+let toefl = 0;
 
 if(type == "TOEFL"){
-    toeflEquivalent = lang;
-}
-
-if(type == "IELTS"){
-    toeflEquivalent = (lang/9) * 120;
+    toefl = score;
 }
 
 if(type == "기관TOEFL"){
-
-    for(let i=0;i<conversionTable.length;i++){
-        if(lang >= conversionTable[i].inst){
-            toeflEquivalent = conversionTable[i].toefl;
+    for(let i=0;i<table.length;i++){
+        if(score >= table[i].inst){
+            toefl = table[i].toefl;
             break;
         }
     }
+}
 
+if(type == "IELTS"){
+    for(let i=0;i<table.length;i++){
+        if(table[i].ielts && score >= table[i].ielts){
+            toefl = table[i].toefl;
+            break;
+        }
+    }
 }
 
 /* 어학 점수 */
 
-let langScore = (toeflEquivalent / 120) * 40;
+let langScore = (toefl/120)*40;
 
 /* 총점 */
 
