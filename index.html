@@ -168,23 +168,27 @@ return true;
 
 function calculateTotal(){
 
-let gpa=parseFloat(document.getElementById("gpa").value);
-let lang=parseFloat(document.getElementById("lang_score").value);
+let gpa = parseFloat(document.getElementById("gpa").value);
+let lang = parseFloat(document.getElementById("lang_score").value);
+let type = document.getElementById("language").value;
 
-let gpaScore=(gpa/4.3)*50;
-let langScore=(lang/120)*40;
+let gpaScore = (gpa/4.3)*50;
 
-return gpaScore+langScore+10;
+let langScore = 0;
 
+if(type == "TOEFL"){
+langScore = (lang/120)*40;
 }
 
-function submitApplication(){
+if(type == "IELTS"){
+langScore = (lang/9)*40;
+}
 
-if(!userEmail){
+if(type == "기관TOEFL"){
+langScore = (lang/677)*40;
+}
 
-alert("먼저 Google 로그인을 해주세요");
-
-return;
+return gpaScore + langScore + 10;
 
 }
 
