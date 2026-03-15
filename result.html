@@ -59,7 +59,7 @@ data.forEach(r=>{
 
 let row=`
 <tr>
-<td onclick="showApplicants('${r.university}')" style="cursor:pointer;color:blue">
+<td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
 ${r.university}
 </td>
 <td>${r.choice_rank}</td>
