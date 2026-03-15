@@ -213,13 +213,23 @@ total:calculateTotal()
 
 };
 
-fetch(API_URL,{
-method:"POST",
-headers:{
-"Content-Type":"text/plain"
-},
-body:JSON.stringify(data)
-})
+fetch(API_URL + "?action=submit"
++ "&email=" + encodeURIComponent(data.email)
++ "&name=" + encodeURIComponent(data.name)
++ "&gpa=" + data.gpa
++ "&language=" + data.language
++ "&lang_score=" + data.lang_score
++ "&total=" + data.total
++ "&choice1=" + encodeURIComponent(data.choice1)
++ "&choice2=" + encodeURIComponent(data.choice2)
++ "&choice3=" + encodeURIComponent(data.choice3)
++ "&choice4=" + encodeURIComponent(data.choice4)
++ "&choice5=" + encodeURIComponent(data.choice5)
+)
+.then(res=>res.json())
+.then(result=>{
+alert("지원이 제출되었습니다");
+});
 
 .then(res=>res.json())
 .then(result=>{
