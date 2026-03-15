@@ -169,24 +169,68 @@ return true;
 function calculateTotal(){
 
 let gpa = parseFloat(document.getElementById("gpa").value);
-let lang = parseFloat(document.getElementById("lang_score").value);
+let lang = parseInt(document.getElementById("lang_score").value);
 let type = document.getElementById("language").value;
 
-let gpaScore = (gpa/4.3)*50;
+/* GPA 점수 */
 
-let langScore = 0;
+let gpaScore = (gpa / 4.3) * 50;
+
+/* 환산표 */
+
+const conversionTable = [
+{inst:677, toefl:120},
+{inst:673, toefl:120},
+{inst:670, toefl:119},
+{inst:667, toefl:118},
+{inst:663, toefl:117},
+{inst:660, toefl:116},
+{inst:657, toefl:115},
+{inst:653, toefl:114},
+{inst:650, toefl:113},
+{inst:647, toefl:112},
+{inst:643, toefl:111},
+{inst:640, toefl:110},
+{inst:637, toefl:109},
+{inst:633, toefl:108},
+{inst:630, toefl:107},
+{inst:627, toefl:106},
+{inst:623, toefl:105},
+{inst:620, toefl:104},
+{inst:617, toefl:103},
+{inst:613, toefl:102},
+{inst:610, toefl:101},
+{inst:607, toefl:100}
+];
+
+/* TOEFL 환산 */
+
+let toeflEquivalent = 0;
 
 if(type == "TOEFL"){
-langScore = (lang/120)*40;
+    toeflEquivalent = lang;
 }
 
 if(type == "IELTS"){
-langScore = (lang/9)*40;
+    toeflEquivalent = (lang/9) * 120;
 }
 
 if(type == "기관TOEFL"){
-langScore = (lang/677)*40;
+
+    for(let i=0;i<conversionTable.length;i++){
+        if(lang >= conversionTable[i].inst){
+            toeflEquivalent = conversionTable[i].toefl;
+            break;
+        }
+    }
+
 }
+
+/* 어학 점수 */
+
+let langScore = (toeflEquivalent / 120) * 40;
+
+/* 총점 */
 
 return gpaScore + langScore + 10;
 
