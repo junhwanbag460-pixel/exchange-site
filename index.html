@@ -1,52 +1,90 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+<meta charset="UTF-8">
 <title>교환학생 모의지원</title>
 </head>
 
 <body>
 
-<h2>지원 입력</h2>
+<h2>교환학생 모의지원</h2>
 
-이름
-<input id="name"><br>
+이름<br>
+<input id="name"><br><br>
 
-학점
-<input id="gpa"><br>
+학점 (4.3 만점)<br>
+<input id="gpa"><br><br>
 
-어학
-
+어학 종류<br>
 <select id="language">
-<option>TOEFL</option>
-<option>IELTS</option>
-<option>기관TOEFL</option>
+<option value="TOEFL">TOEFL</option>
+<option value="IELTS">IELTS</option>
+<option value="기관TOEFL">기관TOEFL</option>
 </select>
 
-점수
-<input id="score"><br>
+<br><br>
 
-1지망
-<input id="c1"><br>
+어학 점수<br>
+<input id="lang_score">
 
-2지망
-<input id="c2"><br>
+<br><br>
 
-3지망
-<input id="c3"><br>
+1지망<br>
+<select id="choice1"></select><br><br>
 
-4지망
-<input id="c4"><br>
+2지망<br>
+<select id="choice2"></select><br><br>
 
-5지망
-<input id="c5"><br>
+3지망<br>
+<select id="choice3"></select><br><br>
 
-<button onclick="submit()">제출</button>
+4지망<br>
+<select id="choice4"></select><br><br>
+
+5지망<br>
+<select id="choice5"></select><br><br>
+
+<button onclick="submitApplication()">지원 제출</button>
 
 <script>
 
-function submit(){
+const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
-var data = {
+fetch(API_URL + "?action=universities")
+.then(res => res.json())
+.then(data => {
+
+let selects = [
+"choice1",
+"choice2",
+"choice3",
+"choice4",
+"choice5"
+];
+
+selects.forEach(id => {
+
+let select = document.getElementById(id);
+
+data.forEach(u => {
+
+let option = document.createElement("option");
+
+option.value = u.name;
+option.text = u.name;
+
+select.appendChild(option);
+
+});
+
+});
+
+});
+
+function submitApplication(){
+
+let data = {
 
 email:"test@khu.ac.kr",
 
@@ -56,25 +94,29 @@ gpa:document.getElementById("gpa").value,
 
 language:document.getElementById("language").value,
 
-score:document.getElementById("score").value,
+lang_score:document.getElementById("lang_score").value,
 
-choice1:document.getElementById("c1").value,
-choice2:document.getElementById("c2").value,
-choice3:document.getElementById("c3").value,
-choice4:document.getElementById("c4").value,
-choice5:document.getElementById("c5").value,
+choice1:document.getElementById("choice1").value,
+choice2:document.getElementById("choice2").value,
+choice3:document.getElementById("choice3").value,
+choice4:document.getElementById("choice4").value,
+choice5:document.getElementById("choice5").value,
 
 total:100
 
 };
 
-fetch("https://script.google.com/macros/s/AKfycbw7BIaYYO7BuDiK7KQypfnoYdcXhSJPBO1SeOJYZo9E8TY_fjYlKpsJlWsJwXtXfIjrRw/exec",{
-
+fetch(API_URL,{
 method:"POST",
-
 body:JSON.stringify(data)
-
 })
+
+.then(res => res.json())
+.then(result => {
+
+alert("지원이 제출되었습니다");
+
+});
 
 }
 
