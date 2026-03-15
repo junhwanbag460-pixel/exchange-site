@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>교환학생 모의지원</title>
+</head>
+
+<body>
+
+<h2>지원 입력</h2>
+
+이름
+<input id="name"><br>
+
+학점
+<input id="gpa"><br>
+
+어학
+
+<select id="language">
+<option>TOEFL</option>
+<option>IELTS</option>
+<option>기관TOEFL</option>
+</select>
+
+점수
+<input id="score"><br>
+
+1지망
+<input id="c1"><br>
+
+2지망
+<input id="c2"><br>
+
+3지망
+<input id="c3"><br>
+
+4지망
+<input id="c4"><br>
+
+5지망
+<input id="c5"><br>
+
+<button onclick="submit()">제출</button>
+
+<script>
+
+function submit(){
+
+var data = {
+
+email:"test@khu.ac.kr",
+
+name:document.getElementById("name").value,
+
+gpa:document.getElementById("gpa").value,
+
+language:document.getElementById("language").value,
+
+score:document.getElementById("score").value,
+
+choice1:document.getElementById("c1").value,
+choice2:document.getElementById("c2").value,
+choice3:document.getElementById("c3").value,
+choice4:document.getElementById("c4").value,
+choice5:document.getElementById("c5").value,
+
+total:100
+
+};
+
+fetch("https://script.google.com/macros/s/AKfycbw7BIaYYO7BuDiK7KQypfnoYdcXhSJPBO1SeOJYZo9E8TY_fjYlKpsJlWsJwXtXfIjrRw/exec",{
+
+method:"POST",
+
+body:JSON.stringify(data)
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
