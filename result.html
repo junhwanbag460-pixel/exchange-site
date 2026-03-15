@@ -139,7 +139,11 @@ html+="<li>4지망: "+(data.choice4||"없음")+"</li>";
 html+="<li>5지망: "+(data.choice5||"없음")+"</li>";
 html+="</ul>";
 
-document.getElementById("studentDetail").innerHTML = html;
+let box = document.getElementById("studentDetail");
+
+box.innerHTML = "";   // 기존 학생 정보만 초기화
+
+box.insertAdjacentHTML("beforeend", html);
 
 });
 
