@@ -28,7 +28,8 @@ data-type="standard"
 data-shape="rectangular"
 data-theme="outline"
 data-text="signin_with"
-data-size="large">
+data-size="large"
+data-callback="handleCredentialResponse">
 </div>
 
 <br>
@@ -79,26 +80,21 @@ let userEmail = localStorage.getItem("userEmail") || "";
 
 function handleCredentialResponse(response){
 
-let data = JSON.parse(atob(response.credential.split('.')[1]));
+console.log("Google response:", response);
 
-userEmail = data.email;
+const payload = JSON.parse(atob(response.credential.split(".")[1]));
+
+userEmail = payload.email;
 
 localStorage.setItem("userEmail", userEmail);
-
-window.userEmail = userEmail;
 
 console.log("login email:", userEmail);
 
 if(!userEmail.endsWith("@khu.ac.kr")){
-
-alert("경희대학교 이메일만 로그인 가능합니다");
-
-localStorage.removeItem("userEmail");
-
-location.reload();
-
+  alert("경희대학교 이메일만 로그인 가능합니다");
+  localStorage.removeItem("userEmail");
+  location.reload();
 }
-
 }
   
 fetch(API_URL + "?action=universities")
