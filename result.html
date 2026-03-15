@@ -26,7 +26,11 @@
 
 <br><br>
 
-<div id="detail"></div>
+<div id="applicants"></div>
+
+<br>
+
+<div id="studentDetail"></div>
 
 <script>
 
@@ -101,7 +105,8 @@ html+=`
 
 html+="</table>";
 
-document.getElementById("detail").innerHTML=html;
+document.getElementById("applicants").innerHTML = html;
+document.getElementById("studentDetail").innerHTML = "";
 
 document.querySelectorAll(".student").forEach(el=>{
 el.addEventListener("click",function(){
@@ -134,7 +139,7 @@ html+="<li>4지망: "+(data.choice4||"없음")+"</li>";
 html+="<li>5지망: "+(data.choice5||"없음")+"</li>";
 html+="</ul>";
 
-document.getElementById("detail").innerHTML=html;
+document.getElementById("studentDetail").innerHTML = html;
 
 });
 
