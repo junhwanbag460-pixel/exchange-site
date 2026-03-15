@@ -223,10 +223,11 @@ fetch(API_URL + "?action=submit"
 + "&choice2=" + encodeURIComponent(data.choice2)
 + "&choice3=" + encodeURIComponent(data.choice3)
 + "&choice4=" + encodeURIComponent(data.choice4)
-+ "&choice5=" + encodeURIComponent(data.choice5)
-)
-.then(res=>res.json())
-.then(result=>{
++ "&choice5=" + encodeURIComponent(data.choice5),
+{
+mode:"no-cors"
+})
+.then(()=>{
 alert("지원이 제출되었습니다");
 });
 
