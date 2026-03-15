@@ -33,8 +33,8 @@ data-size="large">
 
 <br>
 
-이름<br>
-<input id="name"><br><br>
+별명<br>
+<input id="nickname"><br><br>
 
 학점 (4.3 만점)<br>
 <input id="gpa"><br><br>
@@ -283,7 +283,7 @@ if(!checkDuplicate()) return;
 
 let url = API_URL + "?action=submit"
 + "&email=" + encodeURIComponent(userEmail)
-+ "&name=" + encodeURIComponent(document.getElementById("name").value)
++ "&nickname=" + encodeURIComponent(document.getElementById("nickname").value)
 + "&gpa=" + document.getElementById("gpa").value
 + "&language=" + document.getElementById("language").value
 + "&lang_score=" + document.getElementById("lang_score").value
