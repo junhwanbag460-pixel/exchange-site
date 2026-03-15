@@ -2,13 +2,26 @@
 <html>
 
 <head>
+
 <meta charset="UTF-8">
 <title>교환학생 모의지원</title>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 </head>
 
 <body>
 
 <h2>교환학생 모의지원</h2>
+
+<div id="g_id_onload"
+data-client_id="692455502517-52tj203gjltpj5qo1hsa4hfn706o1ogb.apps.googleusercontent.com"
+data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin"></div>
+
+<br>
 
 이름<br>
 <input id="name"><br><br>
@@ -17,6 +30,7 @@
 <input id="gpa"><br><br>
 
 어학 종류<br>
+
 <select id="language">
 <option value="TOEFL">TOEFL</option>
 <option value="IELTS">IELTS</option>
@@ -51,17 +65,29 @@
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
+let userEmail="";
+
+function handleCredentialResponse(response){
+
+let data = JSON.parse(atob(response.credential.split('.')[1]));
+
+userEmail = data.email;
+
+if(!userEmail.endsWith("@khu.ac.kr")){
+
+alert("경희대학교 이메일만 로그인 가능합니다");
+
+location.reload();
+
+}
+
+}
+
 fetch(API_URL + "?action=universities")
 .then(res => res.json())
 .then(data => {
 
-let selects = [
-"choice1",
-"choice2",
-"choice3",
-"choice4",
-"choice5"
-];
+let selects = ["choice1","choice2","choice3","choice4","choice5"];
 
 selects.forEach(id => {
 
@@ -82,11 +108,57 @@ select.appendChild(option);
 
 });
 
+function checkDuplicate(){
+
+let list = [
+document.getElementById("choice1").value,
+document.getElementById("choice2").value,
+document.getElementById("choice3").value,
+document.getElementById("choice4").value,
+document.getElementById("choice5").value
+];
+
+let set = new Set(list);
+
+if(set.size != list.length){
+
+alert("같은 대학을 여러 번 선택할 수 없습니다");
+
+return false;
+
+}
+
+return true;
+
+}
+
+function calculateTotal(){
+
+let gpa=parseFloat(document.getElementById("gpa").value);
+let lang=parseFloat(document.getElementById("lang_score").value);
+
+let gpaScore=(gpa/4.3)*50;
+let langScore=(lang/120)*40;
+
+return gpaScore+langScore+10;
+
+}
+
 function submitApplication(){
 
-let data = {
+if(!userEmail){
 
-email:"test@khu.ac.kr",
+alert("먼저 Google 로그인을 해주세요");
+
+return;
+
+}
+
+if(!checkDuplicate()) return;
+
+let data={
+
+email:userEmail,
 
 name:document.getElementById("name").value,
 
@@ -102,7 +174,7 @@ choice3:document.getElementById("choice3").value,
 choice4:document.getElementById("choice4").value,
 choice5:document.getElementById("choice5").value,
 
-total:100
+total:calculateTotal()
 
 };
 
@@ -111,8 +183,8 @@ method:"POST",
 body:JSON.stringify(data)
 })
 
-.then(res => res.json())
-.then(result => {
+.then(res=>res.json())
+.then(result=>{
 
 alert("지원이 제출되었습니다");
 
