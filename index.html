@@ -82,6 +82,8 @@ let data = JSON.parse(atob(response.credential.split('.')[1]));
 
 userEmail = data.email;
 
+console.log("login email:", userEmail);
+
 if(!userEmail.endsWith("@khu.ac.kr")){
 
 alert("경희대학교 이메일만 로그인 가능합니다");
