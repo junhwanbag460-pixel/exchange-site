@@ -69,6 +69,18 @@ ${r.university}
 </tr>
 `;
 
+document.querySelectorAll(".uni").forEach(el=>{
+
+el.addEventListener("click",function(){
+
+let university=this.getAttribute("data-uni");
+
+showApplicants(university);
+
+});
+
+});  
+
 table.innerHTML+=row;
 
 });
