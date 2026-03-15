@@ -190,50 +190,20 @@ return;
 
 if(!checkDuplicate()) return;
 
-let data={
+let url = API_URL + "?action=submit"
++ "&email=" + encodeURIComponent(userEmail)
++ "&name=" + encodeURIComponent(document.getElementById("name").value)
++ "&gpa=" + document.getElementById("gpa").value
++ "&language=" + document.getElementById("language").value
++ "&lang_score=" + document.getElementById("lang_score").value
++ "&total=" + calculateTotal()
++ "&choice1=" + encodeURIComponent(document.getElementById("choice1").value)
++ "&choice2=" + encodeURIComponent(document.getElementById("choice2").value)
++ "&choice3=" + encodeURIComponent(document.getElementById("choice3").value)
++ "&choice4=" + encodeURIComponent(document.getElementById("choice4").value)
++ "&choice5=" + encodeURIComponent(document.getElementById("choice5").value);
 
-email:userEmail,
-
-name:document.getElementById("name").value,
-
-gpa:document.getElementById("gpa").value,
-
-language:document.getElementById("language").value,
-
-lang_score:document.getElementById("lang_score").value,
-
-choice1:document.getElementById("choice1").value,
-choice2:document.getElementById("choice2").value,
-choice3:document.getElementById("choice3").value,
-choice4:document.getElementById("choice4").value,
-choice5:document.getElementById("choice5").value,
-
-total:calculateTotal()
-
-};
-
-fetch(API_URL + "?action=submit"
-+ "&email=" + encodeURIComponent(data.email)
-+ "&name=" + encodeURIComponent(data.name)
-+ "&gpa=" + data.gpa
-+ "&language=" + data.language
-+ "&lang_score=" + data.lang_score
-+ "&total=" + data.total
-+ "&choice1=" + encodeURIComponent(data.choice1)
-+ "&choice2=" + encodeURIComponent(data.choice2)
-+ "&choice3=" + encodeURIComponent(data.choice3)
-+ "&choice4=" + encodeURIComponent(data.choice4)
-+ "&choice5=" + encodeURIComponent(data.choice5),
-{
-mode:"no-cors"
-})
-.then(()=>{
-alert("지원이 제출되었습니다");
-
-/* 결과 페이지 이동 */
-window.location.href = "result.html";
-
-});
+window.location.href = url;
 
 }
 
