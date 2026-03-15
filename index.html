@@ -85,6 +85,8 @@ userEmail = data.email;
 
 localStorage.setItem("userEmail", userEmail);
 
+window.userEmail = userEmail;
+
 console.log("login email:", userEmail);
 
 if(!userEmail.endsWith("@khu.ac.kr")){
@@ -98,7 +100,7 @@ location.reload();
 }
 
 }
-
+  
 fetch(API_URL + "?action=universities")
 .then(res => res.json())
 .then(data => {
