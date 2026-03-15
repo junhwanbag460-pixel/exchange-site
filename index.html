@@ -119,6 +119,12 @@ selects.forEach(id => {
 
 let select = document.getElementById(id);
 
+// 미선택 옵션 추가
+let empty = document.createElement("option");
+empty.value = "";
+empty.text = "미선택";
+select.appendChild(empty);
+
 data.forEach(u => {
 
 let option = document.createElement("option");
@@ -144,9 +150,12 @@ document.getElementById("choice4").value,
 document.getElementById("choice5").value
 ];
 
-let set = new Set(list);
+// 빈 값 제거
+let filtered = list.filter(v => v !== "");
 
-if(set.size != list.length){
+let set = new Set(filtered);
+
+if(set.size != filtered.length){
 
 alert("같은 대학을 여러 번 선택할 수 없습니다");
 
