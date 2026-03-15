@@ -13,7 +13,6 @@
 <table border="1">
 
 <thead>
-
 <tr>
 <th>대학</th>
 <th>지망</th>
@@ -21,12 +20,16 @@
 <th>순위</th>
 <th>결과</th>
 </tr>
-
 </thead>
 
 <tbody id="resultTable"></tbody>
 
 </table>
+
+<br><br>
+
+<!-- 대학 지원자 / 학생 지원 대학 표시 영역 -->
+<div id="detail"></div>
 
 <script>
 
@@ -37,10 +40,11 @@ let userEmail=localStorage.getItem("userEmail");
 if(!userEmail){
 
 alert("로그인이 필요합니다");
-
 window.location.href="index.html";
 
 }
+
+/* 내 결과 불러오기 */
 
 fetch(API_URL+"?action=myresults&email="+userEmail)
 
@@ -49,14 +53,15 @@ fetch(API_URL+"?action=myresults&email="+userEmail)
 .then(data=>{
 
 let table=document.getElementById("resultTable");
-
 table.innerHTML="";
 
 data.forEach(r=>{
 
 let row=`
 <tr>
-<td>${r.university}</td>
+<td onclick="showApplicants('${r.university}')" style="cursor:pointer;color:blue">
+${r.university}
+</td>
 <td>${r.choice_rank}</td>
 <td>${r.total}</td>
 <td>${r.rank}</td>
@@ -69,6 +74,72 @@ table.innerHTML+=row;
 });
 
 });
+
+
+/* 대학 클릭 → 지원자 목록 */
+
+function showApplicants(university){
+
+fetch(API_URL+"?action=applicants&university="+encodeURIComponent(university))
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let html="<h3>"+university+" 지원자 목록</h3>";
+
+html+="<table border='1'>";
+html+="<tr><th>순위</th><th>이메일</th><th>총점</th><th>지망</th></tr>";
+
+data.forEach(r=>{
+
+html+=`
+<tr onclick="showStudent('${r.email}')" style="cursor:pointer">
+<td>${r.rank}</td>
+<td>${r.email}</td>
+<td>${r.total}</td>
+<td>${r.choice}</td>
+</tr>
+`;
+
+});
+
+html+="</table>";
+
+document.getElementById("detail").innerHTML=html;
+
+});
+
+}
+
+
+/* 지원자 클릭 → 그 사람 지원 대학 */
+
+function showStudent(email){
+
+fetch(API_URL+"?action=student&email="+encodeURIComponent(email))
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(!data) return;
+
+let html="<h3>"+email+" 지원 대학</h3>";
+
+html+="<ul>";
+html+="<li>1지망: "+(data.choice1 || "없음")+"</li>";
+html+="<li>2지망: "+(data.choice2 || "없음")+"</li>";
+html+="<li>3지망: "+(data.choice3 || "없음")+"</li>";
+html+="<li>4지망: "+(data.choice4 || "없음")+"</li>";
+html+="<li>5지망: "+(data.choice5 || "없음")+"</li>";
+html+="</ul>";
+
+document.getElementById("detail").innerHTML=html;
+
+});
+
+}
 
 </script>
 
