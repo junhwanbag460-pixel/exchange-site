@@ -2,26 +2,13 @@
 <html>
 
 <head>
-
 <meta charset="UTF-8">
 <title>지원 결과</title>
-
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
 </head>
 
 <body>
 
 <h2>내 지원 결과</h2>
-
-<div id="g_id_onload"
-data-client_id="692455502517-52tj203gjltpj5qo1hsa4hfn706o1ogb.apps.googleusercontent.com"
-data-callback="handleCredentialResponse">
-</div>
-
-<div class="g_id_signin"></div>
-
-<br>
 
 <table border="1">
 
@@ -37,39 +24,25 @@ data-callback="handleCredentialResponse">
 
 </thead>
 
-<tbody id="resultTable">
-
-</tbody>
+<tbody id="resultTable"></tbody>
 
 </table>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
-let userEmail="";
+let userEmail=localStorage.getItem("userEmail");
 
-function handleCredentialResponse(response){
+if(!userEmail){
 
-let data = JSON.parse(atob(response.credential.split('.')[1]));
+alert("로그인이 필요합니다");
 
-userEmail = data.email;
-
-if(!userEmail.endsWith("@khu.ac.kr")){
-
-alert("경희대학교 이메일만 로그인 가능합니다");
-
-location.reload();
+window.location.href="index.html";
 
 }
 
-loadResults();
-
-}
-
-function loadResults(){
-
-fetch(API_URL + "?action=myresults&email=" + userEmail)
+fetch(API_URL+"?action=myresults&email="+userEmail)
 
 .then(res=>res.json())
 
@@ -96,8 +69,6 @@ table.innerHTML+=row;
 });
 
 });
-
-}
 
 </script>
 
