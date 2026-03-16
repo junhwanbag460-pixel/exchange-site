@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>전체 대학 지원 현황</title>
+</head>
+
+<body>
+
+<h2>전체 대학 지원 현황</h2>
+
+<table border="1">
+<thead>
+<tr>
+<th>대학</th>
+<th>정원</th>
+<th>지원자</th>
+<th>경쟁률</th>
+</tr>
+</thead>
+
+<tbody id="statusTable"></tbody>
+</table>
+
+<script>
+
+const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
+
+fetch(API_URL+"?action=status")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let table=document.getElementById("statusTable");
+
+table.innerHTML="";
+
+data.forEach(u=>{
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+<td>${u.name}</td>
+<td>${u.seats}</td>
+<td>${u.applicants}</td>
+<td>${u.rate}</td>
+`;
+
+table.appendChild(row);
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
