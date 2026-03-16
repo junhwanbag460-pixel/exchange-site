@@ -22,6 +22,7 @@
 <th>정원</th>
 <th>지원자</th>
 <th>경쟁률</th>
+<th>컷라인</th>
 </tr>
 </thead>
 
@@ -52,8 +53,9 @@ row.innerHTML=`
 <td>${u.seats}</td>
 <td>${u.applicants}</td>
 <td>${u.rate}</td>
+<td>${u.cutoff}</td>
 `;
-
+  
 table.appendChild(row);
 
 });
