@@ -96,7 +96,7 @@ data.forEach((r, i)=>{
 
 row.innerHTML=`
 <td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
-${r.university}
+▶ ${r.university}
 </td>
 <td>${r.choice_rank}</td>
 <td>${Number(r.total).toFixed(2)}</td>
@@ -128,11 +128,13 @@ let box=document.getElementById("applicants");
 if(box.dataset.open===this.dataset.uni){
 box.innerHTML="";
 box.dataset.open="";
+this.innerText="▶ "+this.dataset.uni;
 return;
 }
 
 showApplicants(this.dataset.uni);
 box.dataset.open=this.dataset.uni;
+this.innerText="▼ "+this.dataset.uni;
 
 });
 });
@@ -170,9 +172,9 @@ html += "<p>경쟁률: "+rate+" : 1</p>";
 let cutoff;
 
 if(seats > 0 && applicants >= seats){
-cutoff = data[seats-1]?.total;
+cutoff = Number(data[seats-1]?.total);
 }else{
-cutoff = data[applicants-1]?.total;
+cutoff = Number(data[applicants-1]?.total);
 }
   
 if(cutoff !== undefined){
@@ -203,7 +205,7 @@ data.forEach(r=>{
 let highlight = "";
 
 if(r.email === userEmail){
-highlight = "background-color:#fff3cd;font-weight:bold;";
+highlight = "background-color:#ffe9a8;font-weight:bold;";
 }
 
 html+=`
@@ -324,6 +326,15 @@ fetch(API_URL+"?action=status")
 
 .then(data=>{
 
+data.sort(function(a,b){
+
+let A=parseFloat(a.cutoff)||999;
+let B=parseFloat(b.cutoff)||999;
+
+return A-B;
+
+});
+
 let table=document.getElementById("recommendTable");
 
 if(!table) return;
@@ -332,12 +343,12 @@ table.innerHTML="";
 
 data.forEach(u=>{
 
-let cutoff = Number(u.cutoff);
+let cutoff = parseFloat(u.cutoff);
 
 let status="";
 let color="black";
 
-if(cutoff){
+if(!isNaN(cutoff)){
 
 let diff = myScore - cutoff;
 
@@ -361,7 +372,7 @@ let row=document.createElement("tr");
 row.innerHTML=`
 <td>${u.name}</td>
 <td>${u.country}</td>
-<td>${cutoff ? cutoff.toFixed(2) : "-"}</td>
+<td>${!isNaN(cutoff) ? cutoff.toFixed(2) : "-"}</td>
 <td>${myScore.toFixed(2)}</td>
 <td style="color:${color};font-weight:bold">${status}</td>
 `;
