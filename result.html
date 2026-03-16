@@ -48,6 +48,21 @@
 <tbody id="topTable"></tbody>
 </table>
 
+<h3>📊 내 점수 기준 추천 대학</h3>
+
+<table border="1">
+<thead>
+<tr>
+<th>대학</th>
+<th>컷라인</th>
+<th>내 점수</th>
+<th>판단</th>
+</tr>
+</thead>
+
+<tbody id="recommendTable"></tbody>
+</table>
+
 <script>
 
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
@@ -72,6 +87,7 @@ table.innerHTML="";
 
 data.forEach((r, i)=>{
   if(i === 0) myScore = Number(r.total);
+  
   let row=document.createElement("tr");
 
 row.innerHTML=`
@@ -87,6 +103,8 @@ ${r.university}
 table.appendChild(row);
 
 });
+
+loadRecommendedUniversities();
 
 document.querySelectorAll(".uni").forEach(el=>{
 el.addEventListener("click",function(){
@@ -255,6 +273,63 @@ table.appendChild(row);
 
 }
 
+function loadRecommendedUniversities(){
+
+fetch(API_URL+"?action=status")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let table=document.getElementById("recommendTable");
+
+if(!table) return;
+
+table.innerHTML="";
+
+data.forEach(u=>{
+
+let cutoff = Number(u.cutoff);
+
+let status="";
+let color="black";
+
+if(cutoff){
+
+let diff = myScore - cutoff;
+
+if(diff >= 2){
+status="🟢 안정";
+color="green";
+}
+else if(diff >= 0){
+status="🟡 가능";
+color="orange";
+}
+else{
+status="🔴 위험";
+color="red";
+}
+
+}
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+<td>${u.name}</td>
+<td>${cutoff ? cutoff.toFixed(2) : "-"}</td>
+<td>${myScore.toFixed(2)}</td>
+<td style="color:${color};font-weight:bold">${status}</td>
+`;
+
+table.appendChild(row);
+
+});
+
+});
+
+}
+  
 loadTopUniversities();
 setInterval(loadTopUniversities,10000);
   
