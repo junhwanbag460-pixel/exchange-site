@@ -58,6 +58,10 @@ data-size="large">
 
 <br><br>
 
+대학 검색<br>
+<input type="text" id="uniSearch" placeholder="대학 이름 검색">
+<br><br>
+  
 1지망<br>
 <select id="choice1"></select><br><br>
 
@@ -114,30 +118,40 @@ location.reload();
 
 }
   
+let universityList=[];
+
 fetch(API_URL + "?action=universities")
 .then(res => res.json())
 .then(data => {
 
-let selects = ["choice1","choice2","choice3","choice4","choice5"];
+universityList=data;
 
-selects.forEach(id => {
+renderUniversities(data);
 
-let select = document.getElementById(id);
+});
 
-select.innerHTML="";  
+function renderUniversities(data){
 
-// 미선택 옵션 추가
-let empty = document.createElement("option");
-empty.value = "";
-empty.text = "미선택";
+let selects=["choice1","choice2","choice3","choice4","choice5"];
+
+selects.forEach(id=>{
+
+let select=document.getElementById(id);
+
+select.innerHTML="";
+
+let empty=document.createElement("option");
+empty.value="";
+empty.text="미선택";
+
 select.appendChild(empty);
 
-data.forEach(u => {
+data.forEach(u=>{
 
-let option = document.createElement("option");
+let option=document.createElement("option");
 
-option.value = u.name;
-option.text = u.name;
+option.value=u.name;
+option.text=u.name;
 
 select.appendChild(option);
 
@@ -145,7 +159,7 @@ select.appendChild(option);
 
 });
 
-});
+}
 
 function checkDuplicate(){
 
@@ -360,6 +374,19 @@ lockInputs();
 if(userEmail){
 loadStudentData();
 }  
+
+document.getElementById("uniSearch").addEventListener("keyup",function(){
+
+let keyword=this.value.toLowerCase();
+
+let filtered=universityList.filter(u =>
+u.name.toLowerCase().includes(keyword) ||
+u.country.toLowerCase().includes(keyword)
+);
+
+renderUniversities(filtered);
+
+});
   
 </script>
 
