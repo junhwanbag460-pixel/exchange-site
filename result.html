@@ -125,13 +125,19 @@ el.addEventListener("click",function(){
 
 let box=document.getElementById("applicants");
 
+/* 모든 화살표 초기화 */
+document.querySelectorAll(".uni").forEach(u=>{
+u.innerText="▶ "+u.dataset.uni;
+});
+
+/* 같은 대학 다시 클릭하면 닫기 */
 if(box.dataset.open===this.dataset.uni){
 box.innerHTML="";
 box.dataset.open="";
-this.innerText="▶ "+this.dataset.uni;
 return;
 }
 
+/* 새 대학 열기 */
 showApplicants(this.dataset.uni);
 box.dataset.open=this.dataset.uni;
 this.innerText="▼ "+this.dataset.uni;
