@@ -51,9 +51,6 @@
 <tbody id="topTable"></tbody>
 </table>
 
-<h3>🧭 내 지망 전략 분석</h3>
-<div id="strategyBox"></div>
-  
 <h3>📊 내 점수 기준 추천 대학</h3>
 
 <table border="1">
@@ -122,8 +119,7 @@ document.getElementById("expectedResult").innerHTML =
 }
 
 loadRecommendedUniversities();
-analyzeStrategy(data);
-
+  
 document.querySelectorAll(".uni").forEach(el=>{
 el.addEventListener("click",function(){
 
@@ -401,48 +397,6 @@ table.appendChild(row);
 
 }
 
-function analyzeStrategy(data){
-
-fetch(API_URL+"?action=status")
-.then(res=>res.json())
-.then(statusData=>{
-
-let html="";
-
-data.forEach(r=>{
-
-let uni = statusData.find(u=>u.name===r.university);
-
-if(!uni) return;
-
-let cutoff = parseFloat(uni.cutoff);
-let diff = myScore - cutoff;
-
-let status="";
-
-if(isNaN(cutoff)){
-status="🟢 안정";
-}
-else if(diff >= 2){
-status="🟢 안정";
-}
-else if(diff >= 0){
-status="🟡 가능";
-}
-else{
-status="🔴 위험";
-}
-
-html += `<p>${r.choice_rank}지망 ${r.university} : <b>${status}</b></p>`;
-
-});
-
-document.getElementById("strategyBox").innerHTML = html;
-
-});
-
-}
-  
 loadTopUniversities();
 setInterval(loadTopUniversities,10000);
   
