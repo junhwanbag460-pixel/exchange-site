@@ -199,6 +199,32 @@ if(cutoff !== undefined){
 
   let diff = myScore - cutoff;
 
+  let chance;
+
+if(diff >= 3){
+chance = 90;
+}
+else if(diff >= 1){
+chance = 70;
+}
+else if(diff >= 0){
+chance = 55;
+}
+else if(diff >= -1){
+chance = 30;
+}
+else{
+chance = 10;
+}
+
+html += `<p><b>🎯 합격 가능성: ${chance}%</b></p>`;
+
+html += `
+<div style="width:200px;background:#eee;height:10px;border-radius:5px;">
+<div style="width:${chance}%;background:green;height:10px;border-radius:5px;"></div>
+</div>
+`;
+
 if(diff >= 2){
   html += "<p style='color:green'><b>🟢 안정 지원</b></p>";
 }
@@ -412,7 +438,7 @@ let status="";
 if(r.result === "합격"){
 status="🟢 합격 예상";
 }
-else if(r.rank !== "-" && r.rank <= seats){
+else if(r.rank !== "-" && r.rank <= 3){
 status="🟡 경쟁권";
 }
 else{
