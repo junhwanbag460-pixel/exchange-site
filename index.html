@@ -384,27 +384,6 @@ lockInputs();
 if(userEmail){
 loadStudentData();
 }  
-
-document.getElementById("uniSearch").addEventListener("keyup", function(){
-
-let keyword = this.value.toLowerCase();
-
-if(keyword === ""){
-renderUniversities(universityList);
-return;
-}
-
-let filtered = universityList.filter(function(u){
-
-return u.name.toLowerCase().includes(keyword) ||
-u.country.toLowerCase().includes(keyword) ||
-(u.country_kor && u.country_kor.toLowerCase().includes(keyword));
-
-});
-
-renderUniversities(filtered);
-
-});
   
 </script>
 
