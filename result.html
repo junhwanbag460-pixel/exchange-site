@@ -51,6 +51,9 @@
 <tbody id="topTable"></tbody>
 </table>
 
+<h3>🧭 내 지망 전략 분석</h3>
+<div id="strategyBox"></div>
+  
 <h3>📊 내 점수 기준 추천 대학</h3>
 
 <table border="1">
@@ -119,6 +122,7 @@ document.getElementById("expectedResult").innerHTML =
 }
 
 loadRecommendedUniversities();
+analyzeStrategy(data);
 
 document.querySelectorAll(".uni").forEach(el=>{
 el.addEventListener("click",function(){
@@ -169,6 +173,12 @@ let applicants = data.length;
 
 html += "<p>정원: "+(seats || "?")+"명</p>";
 html += "<p>지원자: "+applicants+"명</p>";
+
+let myRank = data.find(r => r.email === userEmail)?.rank;
+
+if(myRank){
+html += "<p><b>📍 내 순위: "+myRank+" / "+applicants+"</b></p>";
+}
 
 if(typeof seats === "number" && seats > 0){
 let rate = (applicants/seats).toFixed(2);
@@ -388,6 +398,32 @@ table.appendChild(row);
 });
 
 });
+
+}
+
+function analyzeStrategy(data){
+
+let html="";
+
+data.forEach(r=>{
+
+let status="";
+
+if(r.result === "합격"){
+status="🟢 합격 예상";
+}
+else if(r.rank !== "-" && r.rank <= seats){
+status="🟡 경쟁권";
+}
+else{
+status="🔴 위험";
+}
+
+html += `<p>${r.choice_rank}지망 ${r.university} : <b>${status}</b></p>`;
+
+});
+
+document.getElementById("strategyBox").innerHTML = html;
 
 }
   
