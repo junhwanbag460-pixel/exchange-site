@@ -332,66 +332,43 @@ table.appendChild(row);
 
 function loadRecommendedUniversities(){
 
-fetch(API_URL+"?action=status")
+fetch(API_URL+"?action=myresults&email="+userEmail)
 
 .then(res=>res.json())
 
 .then(data=>{
 
-data.sort(function(a,b){
-
-let A=parseFloat(a.cutoff)||999;
-let B=parseFloat(b.cutoff)||999;
-
-return A-B;
-
-});
-
 let table=document.getElementById("recommendTable");
-
-if(!table) return;
 
 table.innerHTML="";
 
-data.forEach(u=>{
+let assigned = data.find(r => r.result === "합격");
 
-let cutoff = parseFloat(u.cutoff);
+if(!assigned){
 
-let status="";
-let color="black";
+let row=document.createElement("tr");
 
-if(!isNaN(cutoff)){
+row.innerHTML=`
+<td colspan="5">현재 예상 합격 대학 없음</td>
+`;
 
-let diff = myScore - cutoff;
+table.appendChild(row);
 
-if(diff >= 2){
-status="🟢 안정";
-color="green";
-}
-else if(diff >= 0){
-status="🟡 가능";
-color="orange";
-}
-else{
-status="🔴 위험";
-color="red";
-}
+return;
 
 }
 
 let row=document.createElement("tr");
 
 row.innerHTML=`
-<td>${u.name}</td>
-<td>${u.country}</td>
-<td>${!isNaN(cutoff) ? cutoff.toFixed(2) : "-"}</td>
-<td>${myScore.toFixed(2)}</td>
-<td style="color:${color};font-weight:bold">${status}</td>
+<td>${assigned.university}</td>
+<td>-</td>
+<td>-</td>
+<td>${Number(assigned.total).toFixed(2)}</td>
+<td style="color:green;font-weight:bold">최종 예상 합격</td>
 `;
 
 table.appendChild(row);
-
-});
 
 });
 
