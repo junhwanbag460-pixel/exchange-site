@@ -43,6 +43,7 @@
 <tr>
 <th>순위</th>
 <th>대학</th>
+<th>국가</th>
 <th>경쟁률</th>
 </tr>
 </thead>
@@ -56,6 +57,7 @@
 <thead>
 <tr>
 <th>대학</th>
+<th>국가</th>
 <th>컷라인</th>
 <th>내 점수</th>
 <th>판단</th>
@@ -258,7 +260,12 @@ fetch(API_URL+"?action=status")
 .then(data=>{
 
 data.sort(function(a,b){
-return Number(b.rate) - Number(a.rate);
+
+let A=parseFloat(a.rate);
+let B=parseFloat(b.rate);
+
+return B-A;
+
 });
 
 let table=document.getElementById("topTable");
@@ -274,6 +281,7 @@ let row=document.createElement("tr");
 row.innerHTML=`
 <td>${i+1}</td>
 <td>${u.name}</td>
+<td>${u.country}</td>
 <td>${u.rate}</td>
 `;
 
@@ -329,6 +337,7 @@ let row=document.createElement("tr");
 
 row.innerHTML=`
 <td>${u.name}</td>
+<td>${u.country}</td>
 <td>${cutoff ? cutoff.toFixed(2) : "-"}</td>
 <td>${myScore.toFixed(2)}</td>
 <td style="color:${color};font-weight:bold">${status}</td>
