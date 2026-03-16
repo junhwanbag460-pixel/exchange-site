@@ -176,6 +176,16 @@ if(myRank){
 html += "<p><b>📍 내 순위: "+myRank+" / "+applicants+"</b></p>";
 }
 
+if(myRank && typeof seats === "number"){
+let diff = myRank - seats;
+
+if(diff <= 0){
+html += "<p style='color:green'><b>현재 합격권</b></p>";
+}else{
+html += "<p style='color:red'><b>합격까지 "+diff+"명 남음</b></p>";
+}
+}  
+
 if(typeof seats === "number" && seats > 0){
 let rate = (applicants/seats).toFixed(2);
 html += "<p>경쟁률: "+rate+" : 1</p>";
