@@ -34,6 +34,20 @@
 
 <div id="studentDetail"></div>
 
+<h3>🔥 인기 대학 TOP5</h3>
+
+<table border="1">
+<thead>
+<tr>
+<th>순위</th>
+<th>대학</th>
+<th>경쟁률</th>
+</tr>
+</thead>
+
+<tbody id="topTable"></tbody>
+</table>
+
 <script>
 
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
@@ -197,6 +211,47 @@ box.innerHTML = html;
 
 }
 
+/* 인기 대학 TOP5 불러오기 */
+
+function loadTopUniversities(){
+
+fetch(API_URL+"?action=status")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+data.sort(function(a,b){
+return b.rate - a.rate;
+});
+
+let table=document.getElementById("topTable");
+
+if(!table) return;
+
+table.innerHTML="";
+
+data.slice(0,5).forEach((u,i)=>{
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+<td>${i+1}</td>
+<td>${u.name}</td>
+<td>${u.rate}</td>
+`;
+
+table.appendChild(row);
+
+});
+
+});
+
+}
+
+loadTopUniversities();
+setInterval(loadTopUniversities,10000);
+  
 </script>
 
 </body>
