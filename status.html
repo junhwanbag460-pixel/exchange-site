@@ -10,6 +10,10 @@
 
 <h2>전체 대학 지원 현황</h2>
 
+검색
+<input type="text" id="searchBox" placeholder="대학 이름 검색">
+<br><br>
+
 <table border="1">
 <thead>
 <tr>
@@ -42,7 +46,7 @@ data.forEach(u=>{
 let row=document.createElement("tr");
 
 row.innerHTML=`
-<td>${u.name}</td>
+<td class="uni">${u.name}</td>
 <td>${u.seats}</td>
 <td>${u.applicants}</td>
 <td>${u.rate}</td>
@@ -54,6 +58,28 @@ table.appendChild(row);
 
 });
 
+/* 검색 기능 */
+
+document.getElementById("searchBox").addEventListener("keyup",function(){
+
+let keyword=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("#statusTable tr");
+
+rows.forEach(row=>{
+
+let uni=row.querySelector(".uni")?.innerText.toLowerCase() || "";
+
+if(uni.includes(keyword)){
+row.style.display="";
+}else{
+row.style.display="none";
+}
+
+});
+
+});
+  
 </script>
 
 </body>
