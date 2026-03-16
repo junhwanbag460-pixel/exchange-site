@@ -42,6 +42,9 @@
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
 let universityData=[];
+let currentSort="";
+
+function loadStatus(){
 
 fetch(API_URL+"?action=status")
 
@@ -68,12 +71,18 @@ row.innerHTML=`
 <td>${u.cutoff || "-"}</td>
 <td>${u.firstChoice || 0}</td>
 `;
-  
+
 table.appendChild(row);
 
 });
 
+if(currentSort){
+sortTable(currentSort);
+}
+
 });
+
+}
 
 /* 검색 기능 */
 
@@ -99,6 +108,8 @@ row.style.display="none";
 });
 
 function sortTable(type){
+
+currentSort = type;
 
 universityData.sort((a,b)=>{
 
@@ -144,6 +155,9 @@ table.appendChild(row);
 
 }
   
+loadStatus();
+setInterval(loadStatus,5000);
+
 </script>
 
 </body>
