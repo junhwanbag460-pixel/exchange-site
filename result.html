@@ -72,6 +72,7 @@
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
 let myScore = 0;
+let assignedUniversity = "";
   
 let userEmail=localStorage.getItem("userEmail");
 
@@ -109,6 +110,9 @@ table.appendChild(row);
 });
 
 let assigned = data.find(r => r.result === "합격");
+if(assigned){
+assignedUniversity = assigned.university;
+}  
 
 if(assigned){
 document.getElementById("expectedResult").innerHTML =
@@ -379,23 +383,12 @@ let cutoff=parseFloat(u.cutoff);
 let status="";
 let color="black";
 
-if(!isNaN(cutoff)){
-
-let diff=myScore-cutoff;
-
-if(diff>=2){
-status="🟢 안정";
-color="green";
-}
-else if(diff>=0){
+if(u.name === assignedUniversity){
 status="🟡 가능";
 color="orange";
-}
-else{
-status="🔴 위험";
-color="red";
-}
-
+}else{
+status="";
+color="black";
 }
 
 let row=document.createElement("tr");
