@@ -11,13 +11,14 @@
 <h2>전체 대학 지원 현황</h2>
 
 검색
-<input type="text" id="searchBox" placeholder="대학 이름 검색">
+<input type="text" id="searchBox" placeholder="대학 또는 국가 검색">
 <br><br>
 
 <table border="1">
 <thead>
 <tr>
 <th>대학</th>
+<th>국가</th>
 <th>정원</th>
 <th>지원자</th>
 <th>경쟁률</th>
@@ -47,6 +48,7 @@ let row=document.createElement("tr");
 
 row.innerHTML=`
 <td class="uni">${u.name}</td>
+<td class="country">${u.country}</td>
 <td>${u.seats}</td>
 <td>${u.applicants}</td>
 <td>${u.rate}</td>
@@ -62,15 +64,16 @@ table.appendChild(row);
 
 document.getElementById("searchBox").addEventListener("keyup",function(){
 
-let keyword=this.value.toLowerCase();
+let keyword=this.value.toLowerCase().trim();
 
 let rows=document.querySelectorAll("#statusTable tr");
 
 rows.forEach(row=>{
 
 let uni=row.querySelector(".uni")?.innerText.toLowerCase() || "";
+let country=row.querySelector(".country")?.innerText.toLowerCase() || "";
 
-if(uni.includes(keyword)){
+if(uni.includes(keyword) || country.includes(keyword)){
 row.style.display="";
 }else{
 row.style.display="none";
