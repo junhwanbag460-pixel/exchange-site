@@ -61,7 +61,7 @@ row.innerHTML=`
 ${r.university}
 </td>
 <td>${r.choice_rank}</td>
-<td>${r.total}</td>
+<td>${Number(r.total).toFixed(2)}</td>
 <td>${r.rank}</td>
 <td>${r.result}</td>
 `;
@@ -141,9 +141,7 @@ html+="</ul>";
 
 let box = document.getElementById("studentDetail");
 
-box.innerHTML = "";   // 기존 학생 정보만 초기화
-
-box.insertAdjacentHTML("beforeend", html);
+box.innerHTML = html;
 
 });
 
