@@ -10,6 +10,13 @@
 
 <h2>전체 대학 지원 현황</h2>
 
+정렬
+<button onclick="sortTable('rate')">경쟁률순</button>
+<button onclick="sortTable('cutoff')">컷라인순</button>
+<button onclick="sortTable('firstChoice')">1지망순</button>
+<button onclick="sortTable('seats')">정원순</button>
+<br><br>
+
 검색
 <input type="text" id="searchBox" placeholder="대학 이름 또는 국가 검색">
 <br><br>
@@ -34,11 +41,15 @@
 
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
+let universityData=[];
+
 fetch(API_URL+"?action=status")
 
 .then(res=>res.json())
 
 .then(data=>{
+
+universityData=data;
 
 let table=document.getElementById("statusTable");
 
@@ -49,13 +60,13 @@ data.forEach(u=>{
 let row=document.createElement("tr");
 
 row.innerHTML=`
-<td class="uni">${u.name}</td>
-<td class="country">${u.country}</td>
-<td>${u.seats}</td>
-<td>${u.applicants}</td>
-<td>${u.rate}</td>
-<td>${u.cutoff}</td>
-<td>${u.firstChoice}</td>
+<td class="uni">${u.name || "-"}</td>
+<td class="country">${u.country || "-"}</td>
+<td>${u.seats || 0}</td>
+<td>${u.applicants || 0}</td>
+<td>${u.rate || "0:1"}</td>
+<td>${u.cutoff || "-"}</td>
+<td>${u.firstChoice || 0}</td>
 `;
   
 table.appendChild(row);
@@ -86,6 +97,52 @@ row.style.display="none";
 });
 
 });
+
+function sortTable(type){
+
+universityData.sort((a,b)=>{
+
+let A=a[type] || 0;
+let B=b[type] || 0;
+
+if(type==="rate"){
+A=parseFloat(String(A).split(":")[0]) || 0;
+B=parseFloat(String(B).split(":")[0]) || 0;
+}
+
+if(type==="cutoff"){
+A=parseFloat(A);
+B=parseFloat(B);
+}
+
+return B-A;
+
+});
+
+/* 테이블 다시 그리기 */
+
+let table=document.getElementById("statusTable");
+table.innerHTML="";
+
+universityData.forEach(u=>{
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+<td class="uni">${u.name}</td>
+<td class="country">${u.country}</td>
+<td>${u.seats}</td>
+<td>${u.applicants}</td>
+<td>${u.rate}</td>
+<td>${u.cutoff}</td>
+<td>${u.firstChoice}</td>
+`;
+
+table.appendChild(row);
+
+});
+
+}
   
 </script>
 
