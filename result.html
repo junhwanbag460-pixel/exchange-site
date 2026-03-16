@@ -101,7 +101,7 @@ row.innerHTML=`
 <td>${r.choice_rank}</td>
 <td>${Number(r.total).toFixed(2)}</td>
 <td>${r.rank}</td>
-<td>${r.result}</td>
+<td>${r.result === "미선발" ? "" : r.result}</td>
 `;
 
 table.appendChild(row);
