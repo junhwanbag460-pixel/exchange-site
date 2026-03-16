@@ -335,7 +335,11 @@ let url = API_URL + "?action=submit"
 + "&choice4=" + encodeURIComponent(document.getElementById("choice4").value)
 + "&choice5=" + encodeURIComponent(document.getElementById("choice5").value);
 
-window.location.href = url;
+fetch(url)
+.then(res => res.text())
+.then(() => {
+    window.location.href = "result.html";
+});
 
 }
 
