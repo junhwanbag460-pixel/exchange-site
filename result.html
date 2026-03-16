@@ -228,7 +228,7 @@ fetch(API_URL+"?action=status")
 .then(data=>{
 
 data.sort(function(a,b){
-return b.rate - a.rate;
+return Number(b.rate) - Number(a.rate);
 });
 
 let table=document.getElementById("topTable");
