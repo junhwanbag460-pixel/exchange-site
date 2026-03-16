@@ -122,7 +122,18 @@ loadRecommendedUniversities();
 
 document.querySelectorAll(".uni").forEach(el=>{
 el.addEventListener("click",function(){
+
+let box=document.getElementById("applicants");
+
+if(box.dataset.open===this.dataset.uni){
+box.innerHTML="";
+box.dataset.open="";
+return;
+}
+
 showApplicants(this.dataset.uni);
+box.dataset.open=this.dataset.uni;
+
 });
 });
 
@@ -209,10 +220,22 @@ html+="</table>";
 
 document.getElementById("applicants").innerHTML = html;
 document.getElementById("studentDetail").innerHTML = "";
+document.getElementById("studentDetail").dataset.open="";
 
 document.querySelectorAll(".student").forEach(el=>{
 el.addEventListener("click",function(){
+
+let box=document.getElementById("studentDetail");
+
+if(box.dataset.open===this.dataset.email){
+box.innerHTML="";
+box.dataset.open="";
+return;
+}
+
 showStudent(this.dataset.email);
+box.dataset.open=this.dataset.email;
+
 });
 });
 
