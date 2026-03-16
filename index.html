@@ -285,6 +285,27 @@ return;
 
 }
 
+let nickname = document.getElementById("nickname").value.trim();
+
+if(nickname === ""){
+alert("별명을 입력하세요");
+return;
+}
+
+/* 점수 입력 검사 */
+let gpa = parseFloat(document.getElementById("gpa").value);
+let score = parseFloat(document.getElementById("lang_score").value);
+
+if(isNaN(gpa) || gpa < 0 || gpa > 4.3){
+alert("GPA는 0~4.3 사이로 입력하세요");
+return;
+}
+
+if(isNaN(score) || score <= 0){
+alert("어학 점수를 올바르게 입력하세요");
+return;
+}
+
 if(!checkDuplicate()) return;
 
 let url = API_URL + "?action=submit"
@@ -323,10 +344,12 @@ fetch(API_URL+"?action=student&email="+userEmail)
 
 if(!data) return;
 
+if(data.gpa){
 document.getElementById("nickname").value = data.nickname;
 document.getElementById("gpa").value = data.gpa;
 document.getElementById("language").value = data.language;
 document.getElementById("lang_score").value = data.lang_score;
+}
 
 lockInputs();
 
