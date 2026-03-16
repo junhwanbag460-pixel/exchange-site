@@ -10,6 +10,8 @@
 
 <h2>내 지원 결과</h2>
 
+<h3 id="expectedResult" style="color:blue"></h3>
+
 <a href="status.html">전체 대학 지원 현황 보기</a>
 
 <table border="1">
@@ -103,6 +105,16 @@ ${r.university}
 table.appendChild(row);
 
 });
+
+let assigned = data.find(r => r.result === "합격");
+
+if(assigned){
+document.getElementById("expectedResult").innerHTML =
+"📍 현재 예상 배정 대학: <b>" + assigned.university + "</b> (" + assigned.choice_rank + "지망)";
+}else{
+document.getElementById("expectedResult").innerHTML =
+"📍 현재 예상 배정 대학: 없음 (미선발)";
+}
 
 loadRecommendedUniversities();
 
