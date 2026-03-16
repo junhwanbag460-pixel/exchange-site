@@ -100,21 +100,19 @@ const payload = JSON.parse(
 
 userEmail = payload.email;
 
+if(!userEmail.endsWith("@khu.ac.kr")){
+
+alert("경희대학교 이메일만 로그인 가능합니다");
+
+return;
+
+}
+
 localStorage.setItem("userEmail", userEmail);
 
 console.log("login email:", userEmail);
 
 loadStudentData();
-
-if(!userEmail.endsWith("@khu.ac.kr")){
-
-alert("경희대학교 이메일만 로그인 가능합니다");
-
-localStorage.removeItem("userEmail");
-
-location.reload();
-
-}
 
 }
   
