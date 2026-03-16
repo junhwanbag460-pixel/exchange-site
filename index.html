@@ -14,6 +14,10 @@
 
 <h2>교환학생 모의지원</h2>
 
+<p style="color:red;font-weight:bold">
+⚠️ 별명, 학점, 어학종류, 어학점수는 처음 제출 후 수정할 수 없습니다.
+</p>
+
 <div id="g_id_onload"
 data-client_id="692455502517-52tj203gjltpj5qo1hsa4hfn706o1ogb.apps.googleusercontent.com"
 data-context="signin"
@@ -95,6 +99,8 @@ userEmail = payload.email;
 localStorage.setItem("userEmail", userEmail);
 
 console.log("login email:", userEmail);
+
+loadStudentData();
 
 if(!userEmail.endsWith("@khu.ac.kr")){
 
@@ -297,6 +303,40 @@ let url = API_URL + "?action=submit"
 window.location.href = url;
 
 }
+
+function lockInputs(){
+
+document.getElementById("nickname").disabled = true;
+document.getElementById("gpa").disabled = true;
+document.getElementById("language").disabled = true;
+document.getElementById("lang_score").disabled = true;
+
+}
+
+function loadStudentData(){
+
+fetch(API_URL+"?action=student&email="+userEmail)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(!data) return;
+
+document.getElementById("nickname").value = data.nickname;
+document.getElementById("gpa").value = data.gpa;
+document.getElementById("language").value = data.language;
+document.getElementById("lang_score").value = data.lang_score;
+
+lockInputs();
+
+});
+
+}
+
+if(userEmail){
+loadStudentData();
+}  
   
 </script>
 
