@@ -381,7 +381,8 @@ let keyword=this.value.toLowerCase();
 
 let filtered=universityList.filter(u =>
 u.name.toLowerCase().includes(keyword) ||
-u.country.toLowerCase().includes(keyword)
+u.country.toLowerCase().includes(keyword) ||
+(u.country_kor && u.country_kor.includes(keyword))
 );
 
 renderUniversities(filtered);
