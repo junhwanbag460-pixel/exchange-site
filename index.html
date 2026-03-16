@@ -130,6 +130,14 @@ renderUniversities(data);
 
 function renderUniversities(data){
 
+let selected = {
+choice1: document.getElementById("choice1").value,
+choice2: document.getElementById("choice2").value,
+choice3: document.getElementById("choice3").value,
+choice4: document.getElementById("choice4").value,
+choice5: document.getElementById("choice5").value
+};
+
 let selects=["choice1","choice2","choice3","choice4","choice5"];
 
 selects.forEach(id=>{
@@ -150,6 +158,10 @@ let option=document.createElement("option");
 
 option.value=u.name;
 option.text=u.name;
+
+if(selected[id] === u.name){
+option.selected = true;
+}
 
 select.appendChild(option);
 
@@ -377,15 +389,22 @@ if(userEmail){
 loadStudentData();
 }  
 
-document.getElementById("uniSearch").addEventListener("keyup",function(){
+document.getElementById("uniSearch").addEventListener("keyup", function(){
 
-let keyword=this.value.toLowerCase();
+let keyword = this.value.toLowerCase();
 
-let filtered=universityList.filter(u =>
-u.name.toLowerCase().includes(keyword) ||
+if(keyword === ""){
+renderUniversities(universityList);
+return;
+}
+
+let filtered = universityList.filter(function(u){
+
+return u.name.toLowerCase().includes(keyword) ||
 u.country.toLowerCase().includes(keyword) ||
-(u.country_kor && u.country_kor.includes(keyword))
-);
+(u.country_kor && u.country_kor.toLowerCase().includes(keyword));
+
+});
 
 renderUniversities(filtered);
 
