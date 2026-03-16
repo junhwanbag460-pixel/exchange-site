@@ -429,17 +429,31 @@ table.appendChild(row);
 
 function analyzeStrategy(data){
 
+fetch(API_URL+"?action=status")
+.then(res=>res.json())
+.then(statusData=>{
+
 let html="";
 
 data.forEach(r=>{
 
+let uni = statusData.find(u=>u.name===r.university);
+
+if(!uni) return;
+
+let cutoff = parseFloat(uni.cutoff);
+let diff = myScore - cutoff;
+
 let status="";
 
-if(r.result === "합격"){
-status="🟢 합격 예상";
+if(isNaN(cutoff)){
+status="⚪ 데이터 없음";
 }
-else if(r.rank !== "-" && r.rank <= 3){
-status="🟡 경쟁권";
+else if(diff >= 2){
+status="🟢 안정";
+}
+else if(diff >= 0){
+status="🟡 가능";
 }
 else{
 status="🔴 위험";
@@ -450,6 +464,8 @@ html += `<p>${r.choice_rank}지망 ${r.university} : <b>${status}</b></p>`;
 });
 
 document.getElementById("strategyBox").innerHTML = html;
+
+});
 
 }
   
