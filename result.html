@@ -136,8 +136,15 @@ html+="<table border='1'>";
 html+="<tr><th>순위</th><th>별명</th><th>총점</th><th>지망</th></tr>";
 
 data.forEach(r=>{
+
+let highlight = "";
+
+if(r.email === userEmail){
+highlight = "background-color:#fff3cd;font-weight:bold;";
+}
+
 html+=`
-<tr class="student" data-email="${r.email}" style="cursor:pointer">
+<tr class="student" data-email="${r.email}" style="cursor:pointer;${highlight}">
 <td>${r.rank}</td>
 <td>${r.nickname}</td>
 <td>${Number(r.total).toFixed(2)}</td>
