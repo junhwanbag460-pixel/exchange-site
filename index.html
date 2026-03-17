@@ -380,16 +380,18 @@ if(type == "TOEFL"){
 
 if(type == "기관TOEFL"){
     for(let i=0;i<table.length;i++){
-    if(score >= table[i].inst){
-        toefl = table[i].toefl;
+        if(score >= table[i].inst){
+            toefl = table[i].toefl;
+            break;   // ⭐ 핵심
+        }
     }
-}
 }
 
 if(type == "IELTS"){
     for(let i=0;i<table.length;i++){
         if(table[i].ielts !== null && score >= table[i].ielts){
             toefl = table[i].toefl;
+            break;   // ⭐ 추가
         }
     }
 }
