@@ -4,6 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <title>지원 결과</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <!-- ⭐ 이거 추가 -->
+
 </head>
 
 <body>
@@ -35,6 +38,9 @@
 <br>
 
 <div id="studentDetail"></div>
+
+<!-- ⭐ 추가 -->
+<canvas id="compareChart" style="max-width:500px;"></canvas>
 
 <h3>🔥 인기 대학 TOP5</h3>
 
@@ -93,9 +99,9 @@ table.innerHTML="";
 data.forEach((r, i)=>{
   if(i === 0){
   myScore = Number(r.total);
-
-  // ⭐ 추가 (핵심)
   localStorage.setItem("myScore", myScore);
+
+  localStorage.setItem("myGpa", r.gpa);   // ⭐ 추가
 }
   
   let row=document.createElement("tr");
@@ -261,7 +267,7 @@ document.getElementById("studentDetail").dataset.open="";
 document.querySelectorAll(".student").forEach(el=>{
 el.addEventListener("click",function(){
 
-let box=document.getElementById("studentDetail");
+let box = document.getElementById("studentDetail");
 
 if(box.dataset.open===this.dataset.email){
 box.innerHTML="";
@@ -278,7 +284,6 @@ box.dataset.open=this.dataset.email;
 });
 
 }
-
 
 function showStudent(email){
 
@@ -313,6 +318,8 @@ html += "</ul>";
 let box = document.getElementById("studentDetail");
 
 box.innerHTML = html;
+drawCompareChart(data);   // ⭐ 여기로 이동 (핵심)  
+  
 
 });
 
@@ -429,6 +436,45 @@ table.appendChild(row);
 
 loadTopUniversities();
 setInterval(loadTopUniversities,10000);
+
+let compareChart;
+
+function drawCompareChart(data){
+
+let ctx = document.getElementById("compareChart").getContext("2d");
+
+if(compareChart) compareChart.destroy();
+
+// ⭐ 내 점수
+let myTotal = myScore;
+
+// ⭐ 상대 점수
+let otherTotal = Number(data.total) || 0;
+
+// ⭐ 내 학점 (서버에서 같이 받아야 정확함)
+let myGpa = parseFloat(localStorage.getItem("myGpa")) || 0;
+
+// ⭐ 상대 학점
+let otherGpa = parseFloat(data.gpa) || 0;
+
+compareChart = new Chart(ctx, {
+type: "bar",
+data: {
+labels: ["총점", "학점"],
+datasets: [
+{
+label: "나",
+data: [myTotal, myGpa]
+},
+{
+label: data.nickname,
+data: [otherTotal, otherGpa]
+}
+]
+}
+});
+
+}
   
 </script>
 
