@@ -119,8 +119,8 @@ let universityList=[];
 // ⭐ 여기 추가 (fetch 위)
 function getFilteredUniversities(){
 
-let selectedLang = document.getElementById("language").value || "TOEFL";
-let score = parseFloat(document.getElementById("lang_score").value);
+let selectedLang = ById("language").value || "TOEFL";
+let score = parseFloat(ById("lang_score").value);
 
 return universityList.filter(u => {
 
@@ -160,8 +160,8 @@ return universityList.filter(u => {
 
 function renderDetailInputs(){
 
-let type = document.getElementById("language").value;
-let container = document.getElementById("detailScores");
+let type = ById("language").value;
+let container = ById("detailScores");
 
 container.innerHTML = "";
 
@@ -210,12 +210,12 @@ renderUniversities(getFilteredUniversities());
 });
 
 // ⭐ 여기 추가 (fetch 끝나고 바로 밑)
-document.getElementById("language").addEventListener("change", () => {
+ById("language").addEventListener("change", () => {
 renderUniversities(getFilteredUniversities());
 renderDetailInputs(); // ⭐ 추가
 });
 
-document.getElementById("lang_score").addEventListener("input", () => {
+ById("lang_score").addEventListener("input", () => {
   renderUniversities(getFilteredUniversities());
 });  
 
@@ -514,15 +514,15 @@ document.getElementById("language").value = data.language;
 renderDetailInputs();
 document.getElementById("lang_score").value = data.lang_score;
 
-/* ⭐ 여기 추가 (핵심) */
+/* ⭐ 먼저 렌더 */
+renderUniversities(getFilteredUniversities());
+
+/* ⭐ 그 다음 값 복원 (핵심) */
 document.getElementById("choice1").value = data.choice1 || "";
 document.getElementById("choice2").value = data.choice2 || "";
 document.getElementById("choice3").value = data.choice3 || "";
 document.getElementById("choice4").value = data.choice4 || "";
 document.getElementById("choice5").value = data.choice5 || "";
-
-/* ⭐ 중요: 다시 렌더링 */
-renderUniversities(getFilteredUniversities());
 
 lockInputs();
 
