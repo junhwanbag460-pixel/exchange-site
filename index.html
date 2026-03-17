@@ -110,14 +110,35 @@ loadStudentData();
   
 let universityList=[];
 
+// ⭐ 여기 추가 (fetch 위)
+function getFilteredUniversities(){
+
+let selectedLang = document.getElementById("language").value || "TOEFL";
+
+return universityList.filter(u => {
+
+if(!u.language_requirement) return true;
+
+let allowed = u.language_requirement.split(",").map(v => v.trim());
+
+return allowed.includes(selectedLang);
+
+});
+}
+
 fetch(API_URL + "?action=universities")
 .then(res => res.json())
 .then(data => {
 
 universityList=data;
 
-renderUniversities(data);
+renderUniversities(getFilteredUniversities());
 
+});
+
+// ⭐ 여기 추가 (fetch 끝나고 바로 밑)
+document.getElementById("language").addEventListener("change", () => {
+renderUniversities(getFilteredUniversities());
 });
 
 function renderUniversities(data){
