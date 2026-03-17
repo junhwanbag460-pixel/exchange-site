@@ -103,6 +103,8 @@ if(!userEmail.endsWith("@khu.ac.kr")){
     return;
 }
 
+localStorage.setItem("userEmail", userEmail); // ⭐ 여기로 이동
+
 console.log("login email:", userEmail);
 
 enableInputs();   // ⭐ 추가
@@ -188,11 +190,11 @@ renderDetailInputs(); // ⭐ 추가
 function renderUniversities(data){
 
 let selected = {
-choice1: document.getElementById("choice1").value,
-choice2: document.getElementById("choice2").value,
-choice3: document.getElementById("choice3").value,
-choice4: document.getElementById("choice4").value,
-choice5: document.getElementById("choice5").value
+choice1: document.getElementById("choice1")?.value || "",
+choice2: document.getElementById("choice2")?.value || "",
+choice3: document.getElementById("choice3")?.value || "",
+choice4: document.getElementById("choice4")?.value || "",
+choice5: document.getElementById("choice5")?.value || ""
 };
 
 let selects=["choice1","choice2","choice3","choice4","choice5"];
@@ -339,7 +341,7 @@ if(type == "기관TOEFL"){
 
 if(type == "IELTS"){
     for(let i=0;i<table.length;i++){
-        if(table[i].ielts && score >= table[i].ielts){
+        if(table[i].ielts !== null && score >= table[i].ielts){
             toefl = table[i].toefl;
             break;
         }
@@ -358,18 +360,22 @@ return gpaScore + langScore + 10;
 
 function submitApplication(){
 
+let btn = document.querySelector("button");
+btn.disabled = true;  
+
 if(!userEmail){
 
 alert("먼저 Google 로그인을 해주세요");
+btn.disabled = false; // ⭐ 이거 추가
 
 return;
-
 }
 
 let nickname = document.getElementById("nickname").value.trim();
 
 if(nickname === ""){
 alert("별명을 입력하세요");
+btn.disabled = false;
 return;
 }
 
@@ -379,15 +385,20 @@ let score = parseFloat(document.getElementById("lang_score").value);
 
 if(isNaN(gpa) || gpa < 0 || gpa > 4.3){
 alert("GPA는 0~4.3 사이로 입력하세요");
+btn.disabled = false;
 return;
 }
 
-if(isNaN(score) || score <= 0){
-alert("어학 점수를 올바르게 입력하세요");
+if(isNaN(score)){
+alert("어학 점수를 입력하세요");
+btn.disabled = false;
 return;
 }
 
-if(!checkDuplicate()) return;
+if(!checkDuplicate()){
+btn.disabled = false;
+return;
+}
 
 let url = API_URL + "?action=submit"
 + "&email=" + encodeURIComponent(userEmail)
@@ -411,6 +422,10 @@ fetch(url)
 .then(res => res.text())
 .then(() => {
     window.location.href = "result.html";
+})
+.catch(() => {
+    alert("제출 중 오류 발생");
+    btn.disabled = false; // 실패 시 다시 활성화
 });
 
 }
@@ -434,7 +449,7 @@ fetch(API_URL+"?action=student&email="+userEmail)
 
 if(!data) return;
 
-if(data && data.gpa){
+if(data && data.choice1){
 
 // 기존 값 채우기
 document.getElementById("nickname").value = data.nickname;
@@ -457,10 +472,18 @@ return;
 }
 
 disableAllInputs();
+// ⭐ 로그인 유지 복구
+let savedEmail = localStorage.getItem("userEmail");
+
+if(savedEmail && savedEmail.endsWith("@khu.ac.kr")){
+userEmail = savedEmail;
+enableInputs();
+loadStudentData();
+}
 renderDetailInputs();   // ⭐ 이거 추가 (초기 렌더 강제)
 
 function disableAllInputs(){
-document.querySelectorAll("input, select, button")
+document.querySelectorAll("input, select")
 .forEach(el => el.disabled = true);
 
 // 로그인 버튼은 살려둠
@@ -468,7 +491,7 @@ document.querySelector(".g_id_signin").style.pointerEvents = "auto";
 }
 
 function enableInputs(){
-document.querySelectorAll("input, select, button")
+document.querySelectorAll("input, select")
 .forEach(el => el.disabled = false);
 
 renderDetailInputs();   // ⭐ 추가
