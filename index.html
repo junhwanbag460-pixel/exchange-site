@@ -83,6 +83,11 @@ data-auto_prompt="false">
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
+/* ⭐⭐⭐ 여기 추가 ⭐⭐⭐ */
+function ById(id){
+  return document.getElementById(id);
+}
+
 let userEmail = "";
 
 function handleCredentialResponse(response){
@@ -110,7 +115,9 @@ localStorage.setItem("userEmail", userEmail); // ⭐ 여기로 이동
 console.log("login email:", userEmail);
 
 enableInputs();   // ⭐ 추가
-loadStudentData();
+loadStudentData().then(() => {
+  loadUniversities();
+});
 
 }
   
@@ -119,8 +126,8 @@ let universityList=[];
 // ⭐ 여기 추가 (fetch 위)
 function getFilteredUniversities(){
 
-let selectedLang = ById("language").value || "TOEFL";
-let score = parseFloat(ById("lang_score").value);
+let selectedLang = document.getElementById("language").value || "TOEFL";
+let score = parseFloat(document.getElementById("lang_score").value);
 
 return universityList.filter(u => {
 
@@ -197,18 +204,6 @@ container.innerHTML += createSelect("grammar","문법");
 
 }
 
-fetch(API_URL + "?action=universities")
-.then(res => res.json())
-.then(data => {
-
-universityList = data;
-
-// ⭐ 순서 바꾸기 (핵심)
-renderDetailInputs();
-renderUniversities(getFilteredUniversities());
-
-});
-
 // ⭐ 여기 추가 (fetch 끝나고 바로 밑)
 ById("language").addEventListener("change", () => {
 renderUniversities(getFilteredUniversities());
@@ -222,11 +217,11 @@ ById("lang_score").addEventListener("input", () => {
 function renderUniversities(data){
 
 let selected = {
-choice1: document.getElementById("choice1")?.value || "",
-choice2: document.getElementById("choice2")?.value || "",
-choice3: document.getElementById("choice3")?.value || "",
-choice4: document.getElementById("choice4")?.value || "",
-choice5: document.getElementById("choice5")?.value || ""
+choice1: window.savedChoices?.choice1 || document.getElementById("choice1")?.value || "",
+choice2: window.savedChoices?.choice2 || document.getElementById("choice2")?.value || "",
+choice3: window.savedChoices?.choice3 || document.getElementById("choice3")?.value || "",
+choice4: window.savedChoices?.choice4 || document.getElementById("choice4")?.value || "",
+choice5: window.savedChoices?.choice5 || document.getElementById("choice5")?.value || ""
 };
 
 let selects=["choice1","choice2","choice3","choice4","choice5"];
@@ -487,6 +482,22 @@ fetch(url)
 
 }
 
+function loadUniversities(){
+
+fetch(API_URL + "?action=universities")
+.then(res => res.json())
+.then(data => {
+
+  universityList = data;
+
+  renderDetailInputs();
+
+  renderUniversities(getFilteredUniversities());
+
+});
+
+}
+
 function lockInputs(){
 
 document.getElementById("nickname").disabled = true;
@@ -497,8 +508,7 @@ document.getElementById("lang_score").disabled = true;
 }
 
 function loadStudentData(){
-
-fetch(API_URL+"?action=student&email="+userEmail)
+  return fetch(API_URL+"?action=student&email="+userEmail)
 
 .then(res=>res.json())
 
@@ -514,15 +524,14 @@ document.getElementById("language").value = data.language;
 renderDetailInputs();
 document.getElementById("lang_score").value = data.lang_score;
 
-/* ⭐ 먼저 렌더 */
-renderUniversities(getFilteredUniversities());
-
-/* ⭐ 그 다음 값 복원 (핵심) */
-document.getElementById("choice1").value = data.choice1 || "";
-document.getElementById("choice2").value = data.choice2 || "";
-document.getElementById("choice3").value = data.choice3 || "";
-document.getElementById("choice4").value = data.choice4 || "";
-document.getElementById("choice5").value = data.choice5 || "";
+// ⭐ 이것만 남김 (핵심)
+window.savedChoices = {
+  choice1: data.choice1,
+  choice2: data.choice2,
+  choice3: data.choice3,
+  choice4: data.choice4,
+  choice5: data.choice5
+};
 
 lockInputs();
 
