@@ -29,7 +29,7 @@ display:flex;
 flex-wrap:wrap;
 gap:15px;
 justify-content:center;
-">
+"></div>
 
 <script>
 
@@ -231,11 +231,17 @@ function renderCards(){
 let container = document.getElementById("cardContainer");
 container.innerHTML = "";
 
+console.log("렌더링 시작");
+
 universityData.forEach(u=>{
 
 let card = document.createElement("div");
 
-// ⭐ 여기 추가
+card.onclick = () => {
+  console.log("클릭됨", u.name);   // ⭐ 추가
+  openModal(u);
+};
+
 let cutoff = parseFloat(u.cutoff);
 
 if(isNaN(cutoff)){
@@ -262,8 +268,6 @@ card.innerHTML = `
 <p>📈 컷라인: ${cutoff}</p>
 `;
 
-card.onclick = () => openModal(u);
-
 container.appendChild(card);
 
 });
@@ -272,5 +276,5 @@ container.appendChild(card);
   
 </script>
 
-<body>
+</body>
 </html>
