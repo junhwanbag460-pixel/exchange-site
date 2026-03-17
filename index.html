@@ -171,10 +171,11 @@ fetch(API_URL + "?action=universities")
 .then(res => res.json())
 .then(data => {
 
-universityList=data;
+universityList = data;
 
+// ⭐ 순서 바꾸기 (핵심)
+renderDetailInputs();
 renderUniversities(getFilteredUniversities());
-renderDetailInputs();   // ⭐ 이 줄 추가
 
 });
 
@@ -439,6 +440,7 @@ if(data && data.gpa){
 document.getElementById("nickname").value = data.nickname;
 document.getElementById("gpa").value = data.gpa;
 document.getElementById("language").value = data.language;
+renderDetailInputs();   // ⭐ 이거 추가
 document.getElementById("lang_score").value = data.lang_score;
 
 lockInputs();
@@ -455,6 +457,7 @@ return;
 }
 
 disableAllInputs();
+renderDetailInputs();   // ⭐ 이거 추가 (초기 렌더 강제)
 
 function disableAllInputs(){
 document.querySelectorAll("input, select, button")
@@ -467,7 +470,9 @@ document.querySelector(".g_id_signin").style.pointerEvents = "auto";
 function enableInputs(){
 document.querySelectorAll("input, select, button")
 .forEach(el => el.disabled = false);
-}  
+
+renderDetailInputs();   // ⭐ 추가
+}
   
 </script>
 
