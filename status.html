@@ -36,7 +36,8 @@ let currentSort="";
 
 let chart;
 
-let myScore = Number(localStorage.getItem("myScore")) || 0;  
+let rawScore = localStorage.getItem("myScore");
+let myScore = rawScore ? Number(Number(rawScore).toFixed(2)) : 0;
 
 function loadStatus(){
 
@@ -150,7 +151,6 @@ border-radius:10px;
 ">
 
 <h3 id="modalTitle"></h3>
-<canvas id="chartCanvas"></canvas>
 
 <br>
 <button onclick="closeModal()">닫기</button>
@@ -158,46 +158,45 @@ border-radius:10px;
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
   
 function openModal(u){
 
 document.getElementById("modal").style.display="block";
 
-let ctx = document.getElementById("chartCanvas").getContext("2d");
-
-if(chart) chart.destroy();
-
-let cutoff = parseFloat(u.cutoff);
+// 컷라인 정리
+let cutoff = Number(parseFloat(u.cutoff).toFixed(2));
 if(isNaN(cutoff)) cutoff = 0;
 
-// ⭐ 확률 계산
+// 확률 계산
 let prob = calculateProbability(cutoff, u.applicants, u.seats);
 
-// ⭐ 색상
-let color = prob >= 80 ? "green" :
-            prob >= 50 ? "orange" : "red";
+// 상태 판단
+let status = "";
+let color = "black";
 
-// ⭐ 제목 + 정보
+if(prob >= 80){
+  status = "🟢 안정";
+  color = "green";
+}
+else if(prob >= 50){
+  status = "🟡 적정";
+  color = "orange";
+}
+else{
+  status = "🔴 위험";
+  color = "red";
+}
+
+// 모달 내용 출력
 document.getElementById("modalTitle").innerHTML =
 u.name + " (" + u.country + ")" +
 "<br>합격 확률: <span style='color:"+color+"'>" + prob + "%</span>" +
+"<br>상태: " + status +
 "<br>내 점수: " + myScore +
-"<br>컷라인: " + cutoff;
-
-// ⭐ 그래프
-chart = new Chart(ctx, {
-type: "bar",
-data: {
-labels: ["내 점수", "컷라인"],
-datasets: [{
-label: "점수 비교",
-data: [myScore, cutoff]
-}]
-}
-});
+"<br>컷라인: " + cutoff +
+"<br>지원자: " + u.applicants +
+"<br>정원: " + u.seats;
 
 }
 
@@ -228,7 +227,7 @@ card.innerHTML = `
 <p>🌍 ${u.country}</p>
 <p>👥 ${u.applicants} / ${u.seats}</p>
 <p>🔥 경쟁률: ${u.rate}</p>
-<p>📈 컷라인: ${u.cutoff}</p>
+<p>📈 컷라인: ${Number(parseFloat(u.cutoff).toFixed(2))}</p>
 `;
 
 card.onclick = () => openModal(u);
