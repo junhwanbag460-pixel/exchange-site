@@ -21,21 +21,11 @@
 <input type="text" id="searchBox" placeholder="대학 이름 또는 국가 검색">
 <br><br>
 
-<table border="1">
-<thead>
-<tr>
-<th>대학</th>
-<th>국가</th>
-<th>정원</th>
-<th>지원자</th>
-<th>경쟁률</th>
-<th>컷라인</th>
-<th>1지망</th>
-</tr>
-</thead>
-
-<tbody id="statusTable"></tbody>
-</table>
+<div id="cardContainer" style="
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+"></div>
 
 <script>
 
@@ -44,63 +34,37 @@ const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZ
 let universityData=[];
 let currentSort="";
 
+let chart;
+
+let myScore = Number(localStorage.getItem("myScore")) || 0;  
+
 function loadStatus(){
 
 fetch(API_URL+"?action=status")
-
 .then(res=>res.json())
-
 .then(data=>{
 
-universityData=data;
-
-let table=document.getElementById("statusTable");
-
-table.innerHTML="";
-
-data.forEach(u=>{
-
-let row=document.createElement("tr");
-
-row.innerHTML=`
-<td class="uni">${u.name || "-"}</td>
-<td class="country">${u.country || "-"}</td>
-<td>${u.seats || 0}</td>
-<td>${u.applicants || 0}</td>
-<td>${u.rate || "0:1"}</td>
-<td>${u.cutoff || "-"}</td>
-<td>${u.firstChoice || 0}</td>
-`;
-
-table.appendChild(row);
+universityData = data;
+renderCards();
 
 });
-
-if(currentSort){
-sortTable(currentSort);
 }
-
-});
-
-}
-
 /* 검색 기능 */
 
 document.getElementById("searchBox").addEventListener("keyup",function(){
 
 let keyword=this.value.toLowerCase().trim();
 
-let rows=document.querySelectorAll("#statusTable tr");
+let cards=document.querySelectorAll("#cardContainer > div");
 
-rows.forEach(row=>{
+cards.forEach(card=>{
 
-let uni=row.querySelector(".uni")?.innerText.toLowerCase() || "";
-let country=row.querySelector(".country")?.innerText.toLowerCase() || "";
+let text = card.innerText.toLowerCase();
 
-if(uni.includes(keyword) || country.includes(keyword)){
-row.style.display="";
+if(text.includes(keyword)){
+card.style.display="";
 }else{
-row.style.display="none";
+card.style.display="none";
 }
 
 });
@@ -138,57 +102,143 @@ return B - A;
 
 });
 
-/* 테이블 다시 그리기 */
+// ⭐ 핵심: 다시 카드 렌더링
+renderCards();
 
-let table=document.getElementById("statusTable");
-table.innerHTML="";
+}
+
+function calculateProbability(cutoff, applicants, seats){
+
+if(!cutoff || applicants === 0 || seats === 0) return 0;
+
+let diff = myScore - cutoff;
+
+// 기본 확률
+let prob = 50 + (diff * 10);
+
+// 경쟁률 보정
+let rate = applicants / seats;
+prob -= (rate - 1) * 10;
+
+// 범위 제한
+if(prob > 95) prob = 95;
+if(prob < 5) prob = 5;
+
+return Math.round(prob);
+}
+  
+loadStatus();
+// setInterval(loadStatus,5000); ← 주석 처리
+  
+</script>
+
+<!-- ⭐ 여기 붙여 -->
+<div id="modal" style="
+display:none;
+position:fixed;
+top:0; left:0;
+width:100%; height:100%;
+background:rgba(0,0,0,0.5);
+">
+
+<div style="
+background:white;
+width:400px;
+margin:100px auto;
+padding:20px;
+border-radius:10px;
+">
+
+<h3 id="modalTitle"></h3>
+<canvas id="chartCanvas"></canvas>
+
+<br>
+<button onclick="closeModal()">닫기</button>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  
+function openModal(u){
+
+document.getElementById("modal").style.display="block";
+
+let ctx = document.getElementById("chartCanvas").getContext("2d");
+
+if(chart) chart.destroy();
+
+let cutoff = parseFloat(u.cutoff);
+if(isNaN(cutoff)) cutoff = 0;
+
+// ⭐ 확률 계산
+let prob = calculateProbability(cutoff, u.applicants, u.seats);
+
+// ⭐ 색상
+let color = prob >= 80 ? "green" :
+            prob >= 50 ? "orange" : "red";
+
+// ⭐ 제목 + 정보
+document.getElementById("modalTitle").innerHTML =
+u.name + " (" + u.country + ")" +
+"<br>합격 확률: <span style='color:"+color+"'>" + prob + "%</span>" +
+"<br>내 점수: " + myScore +
+"<br>컷라인: " + cutoff;
+
+// ⭐ 그래프
+chart = new Chart(ctx, {
+type: "bar",
+data: {
+labels: ["내 점수", "컷라인"],
+datasets: [{
+label: "점수 비교",
+data: [myScore, cutoff]
+}]
+}
+});
+
+}
+
+function closeModal(){
+document.getElementById("modal").style.display="none";
+}
+
+function renderCards(){
+
+let container = document.getElementById("cardContainer");
+container.innerHTML = "";
 
 universityData.forEach(u=>{
 
-let row=document.createElement("tr");
+let card = document.createElement("div");
 
-row.innerHTML=`
-<td class="uni">${u.name}</td>
-<td class="country">${u.country}</td>
-<td>${u.seats}</td>
-<td>${u.applicants}</td>
-<td>${u.rate}</td>
-<td>${u.cutoff}</td>
-<td>${u.firstChoice}</td>
+card.style = `
+width:220px;
+border:1px solid #ddd;
+border-radius:12px;
+padding:12px;
+cursor:pointer;
+box-shadow:2px 2px 8px rgba(0,0,0,0.1);
 `;
 
-table.appendChild(row);
+card.innerHTML = `
+<h4>${u.name}</h4>
+<p>🌍 ${u.country}</p>
+<p>👥 ${u.applicants} / ${u.seats}</p>
+<p>🔥 경쟁률: ${u.rate}</p>
+<p>📈 컷라인: ${u.cutoff}</p>
+`;
 
-});
+card.onclick = () => openModal(u);
 
-applySearchFilter();
-
-}
-
-function applySearchFilter(){
-
-let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
-
-let rows=document.querySelectorAll("#statusTable tr");
-
-rows.forEach(row=>{
-
-let uni=row.querySelector(".uni")?.innerText.toLowerCase() || "";
-let country=row.querySelector(".country")?.innerText.toLowerCase() || "";
-
-if(uni.includes(keyword) || country.includes(keyword)){
-row.style.display="";
-}else{
-row.style.display="none";
-}
+container.appendChild(card);
 
 });
 
 }
   
-loadStatus();
-setInterval(loadStatus,5000);
-
 </script>
 
 </body>
