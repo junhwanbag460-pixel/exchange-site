@@ -110,20 +110,31 @@ renderCards();
 
 function calculateProbability(cutoff, applicants, seats){
 
-if(!cutoff || applicants === 0 || seats === 0) return 0;
+if(applicants === 0 || seats === 0) return 0;
 
+// ⭐ 1. 공급 > 수요 → 거의 확정
+if(applicants <= seats){
+  return 98;
+}
+
+// ⭐ 2. 점수 차이
 let diff = myScore - cutoff;
 
-// 기본 확률
-let prob = 50 + (diff * 10);
+// ⭐ 3. 로지스틱 함수
+let k = 0.8;  // 민감도 (중요)
 
-// 경쟁률 보정
+let prob = 1 / (1 + Math.exp(-k * diff));
+
+// ⭐ 4. 경쟁률 반영
 let rate = applicants / seats;
-prob -= (rate - 1) * 10;
+prob = prob * (1 - (rate - 1) * 0.08);
 
-// 범위 제한
+// ⭐ 5. % 변환
+prob = prob * 100;
+
+// ⭐ 6. 범위 제한
 if(prob > 95) prob = 95;
-if(prob < 5) prob = 5;
+if(prob < 10) prob = 10;
 
 return Math.round(prob);
 }
@@ -165,8 +176,13 @@ function openModal(u){
 document.getElementById("modal").style.display="block";
 
 // 컷라인 정리
-let cutoff = Number(parseFloat(u.cutoff).toFixed(2));
-if(isNaN(cutoff)) cutoff = 0;
+let cutoff = parseFloat(u.cutoff);
+
+if(isNaN(cutoff)){
+  cutoff = myScore;  // ⭐ 핵심 (중립값)
+}
+
+cutoff = Number(cutoff.toFixed(2));
 
 // 확률 계산
 let prob = calculateProbability(cutoff, u.applicants, u.seats);
@@ -213,6 +229,15 @@ universityData.forEach(u=>{
 
 let card = document.createElement("div");
 
+// ⭐ 여기 추가
+let cutoff = parseFloat(u.cutoff);
+
+if(isNaN(cutoff)){
+  cutoff = "-";
+}else{
+  cutoff = cutoff.toFixed(2);
+}
+
 card.style = `
 width:220px;
 border:1px solid #ddd;
@@ -227,7 +252,7 @@ card.innerHTML = `
 <p>🌍 ${u.country}</p>
 <p>👥 ${u.applicants} / ${u.seats}</p>
 <p>🔥 경쟁률: ${u.rate}</p>
-<p>📈 컷라인: ${Number(parseFloat(u.cutoff).toFixed(2))}</p>
+<p>📈 컷라인: ${cutoff}</p>
 `;
 
 card.onclick = () => openModal(u);
