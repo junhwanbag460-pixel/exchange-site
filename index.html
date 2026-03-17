@@ -118,14 +118,40 @@ let universityList=[];
 function getFilteredUniversities(){
 
 let selectedLang = document.getElementById("language").value || "TOEFL";
+let score = parseFloat(document.getElementById("lang_score").value);
 
 return universityList.filter(u => {
 
-if(!u.language_requirement) return true;
+  // ❗ 점수 없으면 아무것도 안 보이게
+  if(isNaN(score)) {
+  // 점수 없을 때는 "어학 종류만" 필터
+  if(u.language_requirement){
+    let allowed = u.language_requirement.split(",").map(v => v.trim());
+    return allowed.includes(selectedLang);
+  }
+  return true;
+}
 
-let allowed = u.language_requirement.split(",").map(v => v.trim());
+  // 1️⃣ 어학 종류
+  if(u.language_requirement){
+    let allowed = u.language_requirement.split(",").map(v => v.trim());
+    if(!allowed.includes(selectedLang)) return false;
+  }
 
-return allowed.includes(selectedLang);
+  // 2️⃣ 점수
+  if(selectedLang === "TOEFL" && u.min_toefl){
+    if(score < u.min_toefl) return false;
+  }
+
+  if(selectedLang === "IELTS" && u.min_ielts){
+    if(score < u.min_ielts) return false;
+  }
+
+  if(selectedLang === "기관TOEFL" && u.min_inst){
+    if(score < u.min_inst) return false;
+  }
+
+  return true;
 
 });
 }
@@ -187,6 +213,10 @@ renderUniversities(getFilteredUniversities());
 renderDetailInputs(); // ⭐ 추가
 });
 
+document.getElementById("lang_score").addEventListener("input", () => {
+  renderUniversities(getFilteredUniversities());
+});  
+
 function renderUniversities(data){
 
 let selected = {
@@ -217,6 +247,27 @@ let option=document.createElement("option");
 
 option.value=u.name;
 option.text=u.name;
+
+let score = parseFloat(document.getElementById("lang_score").value);
+let lang = document.getElementById("language").value;
+
+let blocked = false;
+
+if(u.language_requirement){
+  let allowed = u.language_requirement.split(",").map(v => v.trim());
+  if(!allowed.includes(lang)) blocked = true;
+}
+
+if(!isNaN(score)){
+  if(lang === "TOEFL" && u.min_toefl && score < u.min_toefl) blocked = true;
+  if(lang === "IELTS" && u.min_ielts && score < u.min_ielts) blocked = true;
+  if(lang === "기관TOEFL" && u.min_inst && score < u.min_inst) blocked = true;
+}
+
+if(blocked){
+  option.disabled = true;
+  option.text += " (조건 미달)";
+}
 
 if(selected[id] === u.name){
 option.selected = true;
