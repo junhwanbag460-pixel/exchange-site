@@ -246,7 +246,9 @@ html+=`
 
 html+="</table>";
 
-document.getElementById("applicants").innerHTML = html;
+let box = document.getElementById("applicants");
+box.innerHTML = html;
+box.scrollIntoView({ behavior: "smooth" });
 document.getElementById("studentDetail").innerHTML = "";
 document.getElementById("studentDetail").dataset.open="";
 
@@ -291,6 +293,16 @@ html+="<li>3지망: "+(data.choice3||"없음")+"</li>";
 html+="<li>4지망: "+(data.choice4||"없음")+"</li>";
 html+="<li>5지망: "+(data.choice5||"없음")+"</li>";
 html+="</ul>";
+
+html += "<h4>📊 어학 세부 점수</h4>";
+
+html += "<ul>";
+html += "<li>리스닝: " + (data.listening || "-") + "</li>";
+html += "<li>리딩: " + (data.reading || "-") + "</li>";
+html += "<li>스피킹: " + (data.speaking || "-") + "</li>";
+html += "<li>라이팅: " + (data.writing || "-") + "</li>";
+html += "<li>문법: " + (data.grammar || "-") + "</li>";
+html += "</ul>";  
 
 let box = document.getElementById("studentDetail");
 
