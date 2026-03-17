@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>관리자 페이지</title>
+</head>
+
+<body>
+
+<h2>관리자 페이지</h2>
+
+비밀번호<br>
+<input id="adminPw" type="password">
+<button onclick="loadAdmin()">접속</button>
+
+<hr>
+
+<div id="adminPanel" style="display:none">
+
+<h3>대학 목록 수정</h3>
+
+<table border="1">
+<thead>
+<tr>
+<th>대학</th>
+<th>국가</th>
+<th>정원</th>
+<th>TOEFL</th>
+<th>IELTS</th>
+<th>기관TOEFL</th>
+<th>언어조건</th>
+<th>저장</th>
+</tr>
+</thead>
+
+<tbody id="adminTable"></tbody>
+</table>
+
+<br><br>
+
+<h3>새 대학 추가</h3>
+
+<input id="newName" placeholder="대학 이름">
+<input id="newCountry" placeholder="국가">
+<input id="newSeats" placeholder="정원">
+<button onclick="addUniversity()">추가</button>
+
+</div>
+
+<script>
+
+const API_URL = "YOUR_SCRIPT_URL";
+const ADMIN_PASSWORD = "1234"; // 너만 아는 값
+
+function loadAdmin(){
+
+let pw = document.getElementById("adminPw").value;
+
+if(pw !== ADMIN_PASSWORD){
+alert("비밀번호 틀림");
+return;
+}
+
+document.getElementById("adminPanel").style.display = "block";
+
+fetch(API_URL+"?action=universities")
+.then(res=>res.json())
+.then(data=>{
+
+let table = document.getElementById("adminTable");
+table.innerHTML="";
+
+data.forEach(u=>{
+
+let row = document.createElement("tr");
+
+row.innerHTML=`
+<td>${u.name}</td>
+<td>${u.country}</td>
+<td><input value="${u.seats}" id="seats_${u.name}"></td>
+<td><input value="${u.min_toefl}" id="toefl_${u.name}"></td>
+<td><input value="${u.min_ielts}" id="ielts_${u.name}"></td>
+<td><input value="${u.min_inst}" id="inst_${u.name}"></td>
+<td><input value="${u.language_requirement}" id="lang_${u.name}"></td>
+<td><button onclick="save('${u.name}')">저장</button></td>
+`;
+
+table.appendChild(row);
+
+});
+
+});
+
+}
+
+function save(name){
+
+let url = API_URL+"?action=updateUniversity"
++ "&admin=1234"
++ "&name="+encodeURIComponent(name)
++ "&seats="+document.getElementById("seats_"+name).value
++ "&toefl="+document.getElementById("toefl_"+name).value
++ "&ielts="+document.getElementById("ielts_"+name).value
++ "&inst="+document.getElementById("inst_"+name).value
++ "&lang="+document.getElementById("lang_"+name).value;
+
+fetch(url)
+.then(res=>res.text())
+.then(alert);
+
+}
+
+function addUniversity(){
+
+let url = API_URL+"?action=addUniversity"
++ "&admin=1234"
++ "&name="+document.getElementById("newName").value
++ "&country="+document.getElementById("newCountry").value
++ "&seats="+document.getElementById("newSeats").value;
+
+fetch(url)
+.then(res=>res.text())
+.then(alert);
+
+}
+
+</script>
+
+</body>
+</html>
