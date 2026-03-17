@@ -50,7 +50,6 @@
 <script>
 
 const API_URL = "YOUR_SCRIPT_URL";
-const ADMIN_PASSWORD = "1234"; // 너만 아는 값
 
 function loadAdmin(){
 
@@ -95,16 +94,18 @@ table.appendChild(row);
 
 function save(name){
 
-let url = API_URL+"?action=updateUniversity"
-+ "&admin=1234"
-+ "&name="+encodeURIComponent(name)
-+ "&seats="+document.getElementById("seats_"+name).value
-+ "&toefl="+document.getElementById("toefl_"+name).value
-+ "&ielts="+document.getElementById("ielts_"+name).value
-+ "&inst="+document.getElementById("inst_"+name).value
-+ "&lang="+document.getElementById("lang_"+name).value;
+function addUniversity(){
 
-fetch(url)
+fetch(API_URL, {
+method: "POST",
+body: new URLSearchParams({
+action: "addUniversity",
+admin: document.getElementById("adminPw").value,
+name: document.getElementById("newName").value,
+country: document.getElementById("newCountry").value,
+seats: document.getElementById("newSeats").value
+})
+})
 .then(res=>res.text())
 .then(alert);
 
