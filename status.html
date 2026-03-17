@@ -113,20 +113,28 @@ currentSort = type;
 
 universityData.sort((a,b)=>{
 
-let A=a[type] || 0;
-let B=b[type] || 0;
+let A = a[type];
+let B = b[type];
 
 if(type==="rate"){
-A=parseFloat(String(A).split(":")[0]) || 0;
-B=parseFloat(String(B).split(":")[0]) || 0;
+A = parseFloat(String(A).split(":")[0]) || 0;
+B = parseFloat(String(B).split(":")[0]) || 0;
 }
 
-if(type==="cutoff"){
-A=parseFloat(A);
-B=parseFloat(B);
+else if(type==="cutoff"){
+A = parseFloat(A);
+B = parseFloat(B);
+
+if(isNaN(A)) A = -1;
+if(isNaN(B)) B = -1;
 }
 
-return B-A;
+else{
+A = Number(A) || 0;
+B = Number(B) || 0;
+}
+
+return B - A;
 
 });
 
@@ -150,6 +158,29 @@ row.innerHTML=`
 `;
 
 table.appendChild(row);
+
+});
+
+applySearchFilter();
+
+}
+
+function applySearchFilter(){
+
+let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
+
+let rows=document.querySelectorAll("#statusTable tr");
+
+rows.forEach(row=>{
+
+let uni=row.querySelector(".uni")?.innerText.toLowerCase() || "";
+let country=row.querySelector(".country")?.innerText.toLowerCase() || "";
+
+if(uni.includes(keyword) || country.includes(keyword)){
+row.style.display="";
+}else{
+row.style.display="none";
+}
 
 });
 
