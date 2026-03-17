@@ -51,13 +51,20 @@
 
 const API_URL = "YOUR_SCRIPT_URL";
 
+let userEmail = localStorage.getItem("userEmail");
+
 function loadAdmin(){
 
 let pw = document.getElementById("adminPw").value;
 
-if(pw !== ADMIN_PASSWORD){
-alert("비밀번호 틀림");
-return;
+if(!pw){
+  alert("비밀번호를 입력하세요");
+  return;
+}
+
+if(!userEmail){
+  alert("로그인이 필요합니다");
+  location.href = "index.html";
 }
 
 document.getElementById("adminPanel").style.display = "block";
@@ -76,12 +83,12 @@ let row = document.createElement("tr");
 row.innerHTML=`
 <td>${u.name}</td>
 <td>${u.country}</td>
-<td><input value="${u.seats}" id="seats_${u.name}"></td>
-<td><input value="${u.min_toefl}" id="toefl_${u.name}"></td>
-<td><input value="${u.min_ielts}" id="ielts_${u.name}"></td>
-<td><input value="${u.min_inst}" id="inst_${u.name}"></td>
-<td><input value="${u.language_requirement}" id="lang_${u.name}"></td>
-<td><button onclick="save('${u.name}')">저장</button></td>
+<td><input value="${u.seats}" id="seats_${encodeURIComponent(u.name)}"></td>
+<td><input value="${u.min_toefl}" id="toefl_${encodeURIComponent(u.name)}"></td>
+<td><input value="${u.min_ielts}" id="ielts_${encodeURIComponent(u.name)}"></td>
+<td><input value="${u.min_inst}" id="inst_${encodeURIComponent(u.name)}"></td>
+<td><input value="${u.language_requirement}" id="lang_${encodeURIComponent(u.name)}"></td>
+<td><button onclick="save(this.dataset.name)" data-name="${u.name}">저장</button></td>
 `;
 
 table.appendChild(row);
@@ -94,16 +101,20 @@ table.appendChild(row);
 
 function save(name){
 
-function addUniversity(){
+let safeName = encodeURIComponent(name);  // ⭐ 여기로 빼기
 
 fetch(API_URL, {
 method: "POST",
 body: new URLSearchParams({
-action: "addUniversity",
+action: "updateUniversity",
+email: userEmail,
 admin: document.getElementById("adminPw").value,
-name: document.getElementById("newName").value,
-country: document.getElementById("newCountry").value,
-seats: document.getElementById("newSeats").value
+name: name,
+seats: document.getElementById("seats_"+safeName).value,
+toefl: document.getElementById("toefl_"+safeName).value,
+ielts: document.getElementById("ielts_"+safeName).value,
+inst: document.getElementById("inst_"+safeName).value,
+lang: document.getElementById("lang_"+safeName).value
 })
 })
 .then(res=>res.text())
@@ -113,13 +124,17 @@ seats: document.getElementById("newSeats").value
 
 function addUniversity(){
 
-let url = API_URL+"?action=addUniversity"
-+ "&admin=1234"
-+ "&name="+document.getElementById("newName").value
-+ "&country="+document.getElementById("newCountry").value
-+ "&seats="+document.getElementById("newSeats").value;
-
-fetch(url)
+fetch(API_URL, {
+method: "POST",
+body: new URLSearchParams({
+action: "addUniversity",
+email: userEmail,   // ⭐ 추가
+admin: document.getElementById("adminPw").value,
+name: document.getElementById("newName").value,
+country: document.getElementById("newCountry").value,
+seats: document.getElementById("newSeats").value
+})
+})
 .then(res=>res.text())
 .then(alert);
 
