@@ -5,6 +5,36 @@
 <meta charset="UTF-8">
 <title>지원 결과</title>
 
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+  background: #f5f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.sub {
+  color: #555;
+  font-size: 14px;
+  line-height:1.6;
+}
+</style>
+
 </head>
 
 <body>
@@ -62,6 +92,11 @@ margin-top:20px;
 <tbody id="topTable"></tbody>
 </table>
 
+<div class="card">
+  <div class="title">🎯 추천 전략</div>
+  <div id="strategyBox" class="sub"></div>
+</div>
+  
 <h3>📊 내 점수 기준 추천 대학</h3>
 
 <table border="1" style="margin:auto; text-align:center;">
@@ -404,8 +439,8 @@ data.sort((a,b)=>a.diff-b.diff);
 
 /* 상위 5개만 */
 
+generateStrategy(data.slice(0,10)); 
 data.slice(0,5).forEach(u=>{
-
 let cutoff=parseFloat(u.cutoff);
 
 let status="";
@@ -534,11 +569,56 @@ if(prob < 10) prob = 10;
 
 return Math.round(prob);
 }
+
+function generateStrategy(universities){
+
+  // ✅ [여기에 추가]
+  universities.sort((a,b)=>{
+    let diffA = Math.abs(myScore - parseFloat(a.cutoff));
+    let diffB = Math.abs(myScore - parseFloat(b.cutoff));
+    return diffA - diffB;
+  });
+
+  const result = {
+    safe: [],
+    match: [],
+    reach: []
+  };
+
+  universities.forEach(u=>{
+    let cutoff = parseFloat(u.cutoff);
+    if(isNaN(cutoff)) return;
+
+    let diff = myScore - cutoff;
+
+    if(diff >= 2){
+      result.safe.push(u.name);
+    }
+    else if(diff >= -1){
+      result.match.push(u.name);
+    }
+    else{
+      result.reach.push(u.name);
+    }
+  });
+
+  let text = "";
+
+  if(result.safe.length){
+    text += "🟢 안정: " + result.safe.join(", ") + "<br>";
+  }
+  if(result.match.length){
+    text += "🟡 적정: " + result.match.join(", ") + "<br>";
+  }
+  if(result.reach.length){
+    text += "🔴 상향: " + result.reach.join(", ") + "<br>";
+  }
+
+  text += "<br><b>👉 전략: 안정 1~2 + 적정 2 + 상향 1 추천</b>";
+
+  document.getElementById("strategyBox").innerHTML = text;
+}
   
 </script>
-
-<body style="
-text-align:center;
-font-family:sans-serif;
-">
+</body>
 </html>
