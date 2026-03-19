@@ -675,6 +675,8 @@ container.appendChild(card);
 
 function calculateProbability(u){
 
+  if(probabilityCache[u.name]) return probabilityCache[u.name];
+
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
@@ -693,7 +695,11 @@ function calculateProbability(u){
   if(prob > 90) prob = 90;
   if(prob < 10) prob = 10;
 
-  return Math.round(prob);
+  prob = Math.round(prob);
+
+  probabilityCache[u.name] = prob;
+
+  return prob;
 }
   
 function generateAutoCombination(universities){
@@ -988,7 +994,14 @@ statusData.forEach(u=>{
   for(let i=0;i<count;i++){
 
     let base = (parseFloat(u.cutoff) || myScore);
-    let score = base + (Math.random() - 0.5) * 0.8;
+    let prob = calculateProbability(u) / 100;
+
+// 점수 대신 확률 기반 합격 시뮬레이션
+let isPass = Math.random() < prob;
+
+let score = isPass 
+  ? base + Math.random() * 0.5   // 합격권
+  : base - Math.random() * 0.5;  // 탈락권
 
     let typeRand = Math.random();
     let strategy = typeRand < 0.3 ? "safe" : typeRand < 0.6 ? "balanced" : "challenge";
