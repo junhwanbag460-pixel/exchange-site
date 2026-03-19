@@ -156,6 +156,7 @@ margin-top:20px;
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
 let statusData = [];  
+let realStudents = [];   // ⭐ 추가  
 
 let myScore = 0;
 let assignedUniversity = "";
@@ -238,6 +239,18 @@ this.innerText="▼ "+this.dataset.uni;
 });
 
 });
+
+function loadStudents(callback){
+  fetch(API_URL + "?action=students")
+  .then(res => res.json())
+  .then(data => {
+    realStudents = data;
+    if(callback) callback();
+  })
+  .catch(()=>{
+    console.error("students 불러오기 실패");
+  });
+}  
 
 
 function showApplicants(university){
@@ -498,8 +511,16 @@ ${status}
 });
 }
 
-loadStatusData(()=>{
-  loadTopUniversities();
+loadStudents(()=>{
+  loadStatusData(()=>{
+    loadTopUniversities();
+
+    setTimeout(()=>{
+      loadRecommendedUniversities();
+    }, 500);
+
+  });
+});
 
   setTimeout(()=>{
     loadRecommendedUniversities();
@@ -715,24 +736,16 @@ function calculateDynamicCutoff(u){
 
 function simulateAssignment(targetUniversity){
 
-  let students = [];
+  // ⭐ 서버에서 받은 실제 데이터 사용
+  let students = realStudents.map(s => ({
+    score: s.score,
+    choices: [...s.choices],
+    currentChoice: 0,
+    assigned: null,
+    email: s.email
+  }));
 
-  statusData.forEach(u=>{
-    let scores = (u.score_distribution || "")
-      .split(",")
-      .map(Number)
-      .filter(x => !isNaN(x));
-
-    scores.forEach(score=>{
-      students.push({
-        score: score,
-        choices: [u.name],
-        currentChoice: 0,
-        assigned: null
-      });
-    });
-  });
-
+  // ⭐ 내 지원 (가상 추가)
   students.push({
     score: myScore,
     choices: [targetUniversity],
@@ -796,7 +809,7 @@ function simulateAssignment(targetUniversity){
 
   let me = students.find(s=>s.me);
   return me.assigned === targetUniversity;
-}  
+}
   
 </script>
 </body>
