@@ -603,53 +603,66 @@ function calculateProbability(u){
     return probabilityCache[u.name].prob;
   }
 
+  let applicants = Number(u.applicants) || 0;
+  let seats = Number(u.seats) || 1;
+
+  // 🔥 1. 정원 미달
+  if(applicants < seats){
+    probabilityCache[u.name] = { prob: 98, cutoff: myScore };
+    return 98;
+  }
+
   let cutoff = Number(u.cutoff);
 
-  // 컷라인 없으면 중립
   if(isNaN(cutoff)){
-    probabilityCache[u.name] = {
-      prob: 50,
-      cutoff: myScore
-    };
+    probabilityCache[u.name] = { prob: 50, cutoff: myScore };
     return 50;
   }
 
   let diff = myScore - cutoff;
 
-  let prob;
+  // 🔥 2. 기본 확률 (컷라인 기준)
+  let baseProb;
 
-  // 🔥 핵심: 순수 컷라인 모델
-  if(diff >= 2){
-    prob = 95;
+  if(diff >= 2) baseProb = 95;
+  else if(diff >= 1) baseProb = 85;
+  else if(diff >= 0.5) baseProb = 75;
+  else if(diff >= 0) baseProb = 65;
+  else if(diff >= -0.5) baseProb = 50;
+  else if(diff >= -1) baseProb = 35;
+  else if(diff >= -2) baseProb = 20;
+  else baseProb = 5;
+
+  // 🔥 3. 추가합격 (yield) 모델
+  let competition = applicants / seats;
+
+  // 경쟁률 높을수록 이탈 적음
+  let yieldRate = Math.max(0.1, 1 / competition);  
+  // 예:
+  // 경쟁률 1 → 1.0 (많이 빠짐)
+  // 경쟁률 3 → 0.33
+  // 경쟁률 5 → 0.2
+
+  let extraProb = 0;
+
+  if(diff < 0){
+    let gap = Math.abs(diff);
+
+    // 컷라인 아래일 때만 추가합격 적용
+    extraProb = yieldRate * (1 / (gap + 1)) * 100;
   }
-  else if(diff >= 1){
-    prob = 85;
-  }
-  else if(diff >= 0.5){
-    prob = 75;
-  }
-  else if(diff >= 0){
-    prob = 65;
-  }
-  else if(diff >= -0.5){
-    prob = 50;
-  }
-  else if(diff >= -1){
-    prob = 35;
-  }
-  else if(diff >= -2){
-    prob = 20;
-  }
-  else{
-    prob = 5;
-  }
+
+  let finalProb = baseProb + extraProb * 0.5;
+
+  if(finalProb > 98) finalProb = 98;
+  if(finalProb < 2) finalProb = 2;
 
   probabilityCache[u.name] = {
-    prob: prob,
+    prob: Math.round(finalProb),
     cutoff: cutoff
   };
 
-  return prob;
+  return Math.round(finalProb);
 }
   
 function loadStatusData(callback){
