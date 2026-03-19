@@ -190,7 +190,10 @@ function renderCards(){
 
     // ✅ 캐싱 적용
     if(resultCache[u.name] === undefined){
-      resultCache[u.name] = simulateAssignment(u.name);
+      let testChoices = [u.name];
+let assigned = simulateFullAssignment([u.name]);
+let result = (assigned === u.name);
+resultCache[u.name] = (assigned === u.name);
     }
 
     let result = resultCache[u.name];
@@ -301,6 +304,80 @@ function simulateAssignment(targetUniversity){
   let me = students.find(s=>s.me);
   return me.assigned === targetUniversity;
 }
+
+function simulateFullAssignment(testChoices){
+
+  let students = realStudents.map(s => ({
+    score: s.score,
+    choices: [...s.choices],
+    currentChoice: 0,
+    assigned: null
+  }));
+
+  students.push({
+    score: myScore,
+    choices: testChoices,
+    currentChoice: 0,
+    assigned: null,
+    me: true
+  });
+
+  students.sort((a,b)=>b.score-a.score);
+
+  let seatsMap = {};
+  universityData.forEach(u=>{
+    seatsMap[u.name] = Number(u.seats) || 1;
+  });
+
+  let changed = true;
+
+  while(changed){
+    changed = false;
+
+    let pools = {};
+
+    students.forEach(s=>{
+      if(s.assigned === null && s.currentChoice < s.choices.length){
+        let uni = s.choices[s.currentChoice];
+        if(!pools[uni]) pools[uni] = [];
+        pools[uni].push(s);
+      }
+    });
+
+    for(let uni in pools){
+
+      let candidates = pools[uni].slice();
+
+      students.forEach(s=>{
+        if(s.assigned === uni){
+          candidates.push(s);
+        }
+      });
+
+      candidates.sort((a,b)=>b.score-a.score);
+
+      let accepted = candidates.slice(0, seatsMap[uni]);
+      let rejected = candidates.slice(seatsMap[uni]);
+
+      accepted.forEach(s=>{
+        if(s.assigned !== uni){
+          s.assigned = uni;
+          changed = true;
+        }
+      });
+
+      rejected.forEach(s=>{
+        if(s.assigned === uni){
+          s.assigned = null;
+        }
+        s.currentChoice++;
+      });
+    }
+  }
+
+  let me = students.find(s=>s.me);
+  return me.assigned;
+}  
 
 </script>
 
