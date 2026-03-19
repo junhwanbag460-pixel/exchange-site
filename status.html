@@ -56,24 +56,8 @@ renderCards();
 }
 /* 검색 기능 */
 
-document.getElementById("searchBox").addEventListener("keyup",function(){
-
-let keyword=this.value.toLowerCase().trim();
-
-let cards=document.querySelectorAll("#cardContainer > div");
-
-cards.forEach(card=>{
-
-let text = card.innerText.toLowerCase();
-
-if(text.includes(keyword)){
-card.style.display="";
-}else{
-card.style.display="none";
-}
-
-});
-
+document.getElementById("searchBox").addEventListener("keyup", function(){
+  renderCards();
 });
 
 function sortTable(type){
@@ -231,24 +215,47 @@ function renderCards(){
 let container = document.getElementById("cardContainer");
 container.innerHTML = "";
 
-console.log("렌더링 시작");
+let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
 
-universityData.forEach(u=>{
+let filtered = [...universityData]; // 🔥 복사
+
+if(keyword !== ""){
+  filtered = filtered.filter(u =>
+    u.name.toLowerCase().includes(keyword) ||
+    u.country.toLowerCase().includes(keyword)
+  );
+}
+
+if(keyword === ""){
+  container.innerHTML = "<div style='color:#666'>🔍 검색하면 대학이 표시됩니다</div>";
+  return;
+}  
+
+if(filtered.length === 0){
+  container.innerHTML = "<div style='color:#999'>검색 결과 없음</div>";
+  return;
+}
+
+filtered.forEach(u=>{
 
 let card = document.createElement("div");
 
-card.onclick = () => {
-  console.log("클릭됨", u.name);   // ⭐ 추가
-  openModal(u);
-};
+card.onclick = () => openModal(u);
 
 let cutoff = parseFloat(u.cutoff);
+if(isNaN(cutoff)) cutoff = "-";
+else cutoff = cutoff.toFixed(2);
 
-if(isNaN(cutoff)){
-  cutoff = "-";
-}else{
-  cutoff = cutoff.toFixed(2);
-}
+let prob = calculateProbability(
+  parseFloat(u.cutoff) || myScore,
+  u.applicants,
+  u.seats
+);
+
+let color;
+if(prob >= 80) color = "green";
+else if(prob >= 50) color = "orange";
+else color = "red";  
 
 card.style = `
 width:220px;
@@ -257,7 +264,7 @@ border-radius:12px;
 padding:12px;
 cursor:pointer;
 box-shadow:2px 2px 8px rgba(0,0,0,0.1);
-text-align:left;
+text-align:center;
 `;
 
 card.innerHTML = `
@@ -266,12 +273,14 @@ card.innerHTML = `
 <p>👥 ${u.applicants} / ${u.seats}</p>
 <p>🔥 경쟁률: ${u.rate}</p>
 <p>📈 컷라인: ${cutoff}</p>
+<p style="font-weight:bold;color:${color}">
+🎯 ${prob}%
+</p>
 `;
 
 container.appendChild(card);
 
 });
-
 }
   
 </script>
