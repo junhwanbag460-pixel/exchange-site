@@ -96,6 +96,11 @@ margin-top:20px;
   <div class="title">🎯 추천 전략</div>
   <div id="strategyBox" class="sub"></div>
 </div>
+
+<div class="card">
+  <div class="title">🤖 자동 지원 조합</div>
+  <div id="autoStrategyBox" class="sub"></div>
+</div>  
   
 <h3>📊 내 점수 기준 추천 대학</h3>
 
@@ -439,7 +444,8 @@ data.sort((a,b)=>a.diff-b.diff);
 
 /* 상위 5개만 */
 
-generateStrategy(data.slice(0,10)); 
+generateStrategy(data.slice(0,10));
+generateAutoCombination(data.slice(0,10)); 
 data.slice(0,5).forEach(u=>{
 let cutoff=parseFloat(u.cutoff);
 
@@ -581,9 +587,50 @@ if(prob < 10) prob = 10;
 return Math.round(prob);
 }
 
+function generateAutoCombination(universities){
+
+  let safe = [];
+  let match = [];
+  let reach = [];
+
+  universities.forEach(u=>{
+    let cutoff = parseFloat(u.cutoff);
+    if(isNaN(cutoff)) return;
+
+    let diff = myScore - cutoff;
+
+    if(diff >= 2) safe.push(u);
+    else if(diff >= -1) match.push(u);
+    else reach.push(u);
+  });
+
+  // 정렬
+  const sortFn = (a,b)=>
+    Math.abs(myScore - a.cutoff) - Math.abs(myScore - b.cutoff);
+
+  safe.sort(sortFn);
+  match.sort(sortFn);
+  reach.sort(sortFn);
+
+  let picks = [];
+
+  if(reach[0]) picks.push({rank:1, name:reach[0].name, type:"🔥 상향"});
+  if(match[0]) picks.push({rank:2, name:match[0].name, type:"🟡 적정"});
+  if(match[1]) picks.push({rank:3, name:match[1].name, type:"🟡 적정"});
+  if(safe[0]) picks.push({rank:4, name:safe[0].name, type:"🟢 안정"});
+  if(safe[1]) picks.push({rank:5, name:safe[1].name, type:"🟢 안정"});
+
+  let html = "";
+
+  picks.forEach(p=>{
+    html += `${p.rank}지망: ${p.name} (${p.type})<br>`;
+  });
+
+  document.getElementById("autoStrategyBox").innerHTML = html;
+}
+
 function generateStrategy(universities){
 
-  // ✅ [여기에 추가]
   universities.sort((a,b)=>{
     let diffA = Math.abs(myScore - parseFloat(a.cutoff));
     let diffB = Math.abs(myScore - parseFloat(b.cutoff));
@@ -628,7 +675,7 @@ function generateStrategy(universities){
   text += "<br><b>👉 전략: 안정 1~2 + 적정 2 + 상향 1 추천</b>";
 
   document.getElementById("strategyBox").innerHTML = text;
-}
+}  
   
 </script>
 </body>
