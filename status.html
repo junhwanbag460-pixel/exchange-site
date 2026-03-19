@@ -116,7 +116,10 @@ function calculateProbability(u){
   let seats = Number(u.seats) || 1;
 
   if(baseScores.length === 0){
-    probabilityCache[u.name] = { prob:50, cutoff: myScore };
+    probabilityCache[u.name] = {
+      prob: 50,
+      cutoff: myScore
+    };
     return 50;
   }
 
@@ -128,22 +131,18 @@ function calculateProbability(u){
 
     let simulated = [];
 
-    // 🔥 지원자 생성
     for(let i = 0; i < applicants; i++){
       let rand = baseScores[Math.floor(Math.random() * baseScores.length)];
       simulated.push(rand);
     }
 
-    // 🔥 내 점수 포함
     simulated.push(myScore);
 
     simulated.sort((a,b)=>b-a);
 
-    // 🔥 컷라인 (정원 마지막 점수)
     let cutoff = simulated[seats - 1] || simulated[simulated.length - 1];
     cutoffSum += cutoff;
 
-    // 🔥 내 순위
     let rank = simulated.indexOf(myScore) + 1;
 
     if(rank <= seats){
@@ -159,11 +158,8 @@ function calculateProbability(u){
 
   probabilityCache[u.name] = {
     prob: prob,
-    if(cutoff !== "-"){
-  cutoff = Number(cutoff.toFixed(2));
-}
-
-}  
+    cutoff: Number(avgCutoff.toFixed(2))
+  };
 
   return prob;
 }
@@ -282,9 +278,11 @@ card.onclick = () => openModal(u);
 let prob = calculateProbability(u);
 let cutoff = probabilityCache[u.name]?.cutoff;
 
-if(!cutoff) cutoff = "-";
-if(isNaN(cutoff)) cutoff = "-";
-else cutoff = cutoff.toFixed(2);
+if(typeof cutoff !== "number"){
+  cutoff = "-";
+} else {
+  cutoff = cutoff.toFixed(2);
+}
 
 let color;
 if(prob >= 80) color = "green";
