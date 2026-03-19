@@ -159,7 +159,6 @@ let statusData = [];
 
 let myScore = 0;
 let assignedUniversity = "";
-let probabilityCache = {};
   
 let userEmail=localStorage.getItem("userEmail");
 
@@ -462,8 +461,6 @@ let candidates = data
 // diff 계산
 candidates.forEach(u=>{
   let result = simulateAssignment(u.name);
-let cutoff = probabilityCache[u.name].cutoff
-
 if(!cutoff) cutoff = myScore;
   if(isNaN(cutoff)) cutoff = myScore;
 
@@ -476,12 +473,11 @@ candidates.sort((a,b)=>a.diff-b.diff);
   
 // 출력
 candidates.slice(0,5).forEach(u=>{
-let cutoff = probabilityCache[u.name]?.cutoff;
 
 if(!cutoff) cutoff = myScore;
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbability(u);
+  let result = simulateAssignment(u.name);
 
   let trend = "";
 
@@ -509,16 +505,11 @@ let diff = myScore - cutoff;
 let status="";
 let color="black";
 
-if(prob >= 75){
-  status="🟢 안정";
+if(result){
+  status="🟢 추천";
   color="green";
-}
-else if(prob >= 45){
-  status="🟡 가능";
-  color="orange";
-}
-else{
-  status="🔴 위험";
+}else{
+  status="🔴 비추천";
   color="red";
 }
 
@@ -529,7 +520,7 @@ else{
 <td>${u.country}</td>
 <td>${myScore.toFixed(2)}</td>
 <td style="color:${color};font-weight:bold">
-${status} (${prob}%)
+${status}
 </td>
 `;
 
@@ -602,8 +593,6 @@ function loadStatusData(callback){
   .then(res=>res.json())
   .then(data=>{
   statusData = data;
-
-  probabilityCache = {};
 
   callback();
 renderSearchResults(); // 🔥 이거 추가
