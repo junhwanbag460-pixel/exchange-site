@@ -600,69 +600,81 @@ card.className = "card";   // 🔥 이거 추가
 function calculateProbability(u){
 
   if(probabilityCache[u.name] !== undefined){
-    return probabilityCache[u.name].prob;
+    return probabilityCache[u.name];
   }
 
   let applicants = Number(u.applicants) || 0;
   let seats = Number(u.seats) || 1;
 
-  // 🔥 1. 정원 미달
-  if(applicants < seats){
-    probabilityCache[u.name] = { prob: 98, cutoff: myScore };
+  if(applicants === 0){
+    probabilityCache[u.name] = 98;
     return 98;
   }
 
-  let cutoff = Number(u.cutoff);
+  let scores = (u.score_distribution || "")
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x));
 
-  if(isNaN(cutoff)){
-    probabilityCache[u.name] = { prob: 50, cutoff: myScore };
+  if(scores.length === 0){
+    probabilityCache[u.name] = 50;
     return 50;
   }
 
-  let diff = myScore - cutoff;
+  let trials = 200;
+  let pass = 0;
 
-  // 🔥 2. 기본 확률 (컷라인 기준)
-  let baseProb;
+  for(let t = 0; t < trials; t++){
 
-  if(diff >= 2) baseProb = 95;
-  else if(diff >= 1) baseProb = 85;
-  else if(diff >= 0.5) baseProb = 75;
-  else if(diff >= 0) baseProb = 65;
-  else if(diff >= -0.5) baseProb = 50;
-  else if(diff >= -1) baseProb = 35;
-  else if(diff >= -2) baseProb = 20;
-  else baseProb = 5;
+    // 🔥 1. 전체 지원자 생성
+    let students = scores.map(s => ({
+      score: s,
+      assigned: false
+    }));
 
-  // 🔥 3. 추가합격 (yield) 모델
-  let competition = applicants / seats;
+    // 🔥 내 점수 추가
+    students.push({ score: myScore, me: true });
 
-  // 경쟁률 높을수록 이탈 적음
-  let yieldRate = Math.max(0.1, 1 / competition);  
-  // 예:
-  // 경쟁률 1 → 1.0 (많이 빠짐)
-  // 경쟁률 3 → 0.33
-  // 경쟁률 5 → 0.2
+    // 🔥 2. 점수 순 정렬
+    students.sort((a,b)=>b.score-a.score);
 
-  let extraProb = 0;
+    let filled = 0;
 
-  if(diff < 0){
-    let gap = Math.abs(diff);
+    // 🔥 3. 배정 시뮬레이션 (핵심)
+    for(let i = 0; i < students.length; i++){
 
-    // 컷라인 아래일 때만 추가합격 적용
-    extraProb = yieldRate * (1 / (gap + 1)) * 100;
+      if(filled >= seats) break;
+
+      let s = students[i];
+
+      // 🔥 앞사람이 이 대학 선택할 확률
+      let chooseProb = 0.6; // 기본값
+
+      // 점수 높을수록 인기대학 선택 가능성 ↑
+      if(i < seats) chooseProb = 0.8;
+      else if(i < seats * 2) chooseProb = 0.6;
+      else chooseProb = 0.4;
+
+      if(Math.random() < chooseProb){
+
+        filled++;
+
+        if(s.me){
+          pass++;
+          break;
+        }
+      }
+    }
   }
 
-  let finalProb = baseProb + extraProb * 0.5;
+  let prob = Math.round((pass / trials) * 100);
 
-  if(finalProb > 98) finalProb = 98;
-  if(finalProb < 2) finalProb = 2;
+  if(prob < 2) prob = 2;
+  if(prob > 98) prob = 98;
 
-  probabilityCache[u.name] = {
-    prob: Math.round(finalProb),
-    cutoff: cutoff
-  };
+  probabilityCache[u.name] = prob;
 
-  return Math.round(finalProb);
+  return prob;
 }
   
 function loadStatusData(callback){
