@@ -96,35 +96,27 @@ renderCards();
 
 }
 
-function calculateProbability(cutoff, applicants, seats){
+function calculateProbability(u){
 
-if(applicants === 0 || seats === 0) return 0;
+  let cutoff = parseFloat(u.cutoff);
+  if(isNaN(cutoff)) cutoff = myScore;
 
-// ⭐ 1. 공급 > 수요 → 거의 확정
-if(applicants <= seats){
-  return 98;
-}
+  let applicants = Number(u.applicants) || 1;
+  let seats = Number(u.seats) || 1;
 
-// ⭐ 2. 점수 차이
-let diff = myScore - cutoff;
+  let diff = myScore - cutoff;
 
-// ⭐ 3. 로지스틱 함수
-let k = 0.8;  // 민감도 (중요)
+  let prob = 1 / (1 + Math.exp(-0.7 * diff));
 
-let prob = 1 / (1 + Math.exp(-k * diff));
+  let rate = applicants / seats;
+  prob *= Math.exp(-0.15 * (rate - 1));
 
-// ⭐ 4. 경쟁률 반영
-let rate = applicants / seats;
-prob = prob * (1 - (rate - 1) * 0.08);
+  prob = prob * 100;
 
-// ⭐ 5. % 변환
-prob = prob * 100;
+  if(prob > 90) prob = 90;
+  if(prob < 10) prob = 10;
 
-// ⭐ 6. 범위 제한
-if(prob > 95) prob = 95;
-if(prob < 10) prob = 10;
-
-return Math.round(prob);
+  return Math.round(prob);
 }
   
 loadStatus();
@@ -246,11 +238,7 @@ let cutoff = parseFloat(u.cutoff);
 if(isNaN(cutoff)) cutoff = "-";
 else cutoff = cutoff.toFixed(2);
 
-let prob = calculateProbability(
-  parseFloat(u.cutoff) || myScore,
-  u.applicants,
-  u.seats
-);
+calculateProbability(u)
 
 let color;
 if(prob >= 80) color = "green";
