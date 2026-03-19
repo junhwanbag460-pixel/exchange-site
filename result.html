@@ -150,6 +150,7 @@ let statusData = [];
 
 let myScore = 0;
 let assignedUniversity = "";
+let probabilityCache = {};  
   
 let userEmail=localStorage.getItem("userEmail");
 
@@ -278,6 +279,12 @@ let cutoff;
 
 let index = Math.min(seats - 1, applicants - 1);
 cutoff = Number(data[index]?.total);
+
+// 기존 cutoff 아래에 추가
+
+let buffer = Math.log(applicants + 1) * 0.3; // 경쟁률 반영
+
+cutoff = cutoff + buffer;  
   
 if(cutoff !== undefined){
   html += "<p>현재 합격 예상선: "+Number(cutoff).toFixed(2)+"</p>";
@@ -457,13 +464,35 @@ candidates.slice(0,5).forEach(u=>{
   let cutoff=parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let status="";
-  let color="black";
+  let prob = calculateProbabilityAdvanced(u.name);
 
-  if(u.name === assignedUniversity){
-    status="🟡 가능";
-    color="orange";
-  }
+  let trend = "";
+
+if(prob >= 75){
+  trend = "📈 상승";
+}
+else if(prob <= 40){
+  trend = "📉 하락";
+}
+else{
+  trend = "➡️ 유지";
+}
+
+let status="";
+let color="black";
+
+if(prob >= 70){
+  status="🟢 안정";
+  color="green";
+}
+else if(prob >= 40){
+  status="🟡 가능";
+  color="orange";
+}
+else{
+  status="🔴 위험";
+  color="red";
+}
 
   let row=document.createElement("tr");
 
@@ -472,7 +501,9 @@ candidates.slice(0,5).forEach(u=>{
   <td>${u.country}</td>
   <td>${!isNaN(cutoff)?cutoff.toFixed(2):"-"}</td>
   <td>${myScore.toFixed(2)}</td>
-  <td style="color:${color};font-weight:bold">${status}</td>
+  <td style="color:${color};font-weight:bold">
+  ${status} (${prob}%)
+  </td>
   `;
 
   table.appendChild(row);
@@ -488,7 +519,8 @@ loadStatusData(()=>{
 setInterval(()=>{
   loadStatusData(()=>{
     loadTopUniversities();
-    loadProbabilityCards();   // 🔥 이 줄 추가
+    loadProbabilityCards();
+    loadRecommendedUniversities(); // 🔥 추가
   });
 },10000);
 
@@ -509,7 +541,19 @@ if(isNaN(cutoff)){
 }
 
 // ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
-let prob = calculateProbability(cutoff, u.applicants, u.seats);
+let prob = calculateProbabilityAdvanced(u.name);
+
+  let trend = "";
+
+if(prob >= 75){
+  trend = "📈 상승";
+}
+else if(prob <= 40){
+  trend = "📉 하락";
+}
+else{
+  trend = "➡️ 유지";
+}
 
 // 상태 판단
 let status = "";
@@ -557,6 +601,10 @@ ${prob}%
 <div style="font-size:12px;color:#888">
 컷라인 ${cutoff.toFixed(2)} / 내 점수 ${myScore.toFixed(2)}
 </div>
+
+<div style="font-size:12px;color:#666;margin-top:4px">
+${trend}
+</div>
 `;
 
 container.appendChild(card);
@@ -564,29 +612,45 @@ container.appendChild(card);
 });
 }
 
-function calculateProbability(cutoff, applicants, seats){
+function calculateProbabilityAdvanced(universityName){
 
-if(applicants === 0 || seats === 0) return 0;
-
-if(applicants <= seats){
-  return 95;
+  // 🔥 캐시 있으면 바로 반환
+  if(probabilityCache[universityName] !== undefined){
+  return probabilityCache[universityName];
 }
 
-let diff = myScore - cutoff;
+  let iterations = 200;
+  let success = 0;
 
-// 완만한 로지스틱
-let prob = 1 / (1 + Math.exp(-0.6 * diff));
+  for(let i=0;i<iterations;i++){
 
-// 경쟁률 영향 완화
-let rate = applicants / seats;
-prob = prob * (1 / (1 + 0.15 * (rate - 1)));
+    let simulated = statusData.map(u=>{
+      let noise = (Math.random() - 0.5) * 0.5;
 
-prob = prob * 100;
+      return {
+        ...u,
+        cutoffSim: (parseFloat(u.cutoff) || myScore) + noise
+      };
+    });
 
-if(prob > 95) prob = 95;
-if(prob < 5) prob = 5;
+    let target = simulated.find(u=>u.name === universityName);
 
-return Math.round(prob);
+    if(!target) continue;
+
+    if(myScore >= target.cutoffSim){
+      success++;
+    }
+  }
+
+  let prob = Math.round((success / iterations) * 100);
+
+  if(prob > 95) prob = 95;
+  if(prob < 5) prob = 5;
+
+  // 🔥 캐시에 저장
+  probabilityCache[universityName] = prob;
+
+  return prob;
 }
 
 function generateAutoCombination(universities){
@@ -599,7 +663,7 @@ function generateAutoCombination(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbability(cutoff, u.applicants, u.seats);
+    let prob = calculateProbabilityAdvanced(u.name);
 
     if(prob >= 70) safe.push(u);
     else if(prob >= 40) match.push(u);
@@ -654,7 +718,7 @@ function generateStrategy(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbability(cutoff, u.applicants, u.seats);
+    let prob = calculateProbabilityAdvanced(u.name);
 
     if(prob >= 70){
       result.safe.push(u.name);
@@ -701,7 +765,7 @@ let enriched = universities.map(u=>{
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbability(cutoff, u.applicants, u.seats);
+  let prob = calculateProbabilityAdvanced(u.name);
 
   let diff = myScore - cutoff;
 
@@ -785,9 +849,12 @@ function loadStatusData(callback){
   fetch(API_URL+"?action=status")
   .then(res=>res.json())
   .then(data=>{
-    statusData = data;
-    callback();
-  })
+  statusData = data;
+
+  probabilityCache = {}; // 🔥 반드시 추가
+
+  callback();
+})
   .catch(()=>{
     console.error("status 불러오기 실패");
   });
