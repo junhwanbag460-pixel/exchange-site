@@ -11,14 +11,25 @@ body {
   background: #f5f6f8;
   margin: 0;
   padding: 20px;
+  text-align: center;
 }
 
 .card, .card * {
+  text-align: center !important;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
   text-align: center;
 }
 
-#probabilityCards div {
+div, p, h1, h2, h3, h4, span, input {
   text-align: center;
+}
+
+* {
+  text-align: center !important;
 }  
 
 .card {
@@ -607,6 +618,7 @@ function loadProbabilityCards(){
     let prob = calculateProbability(u);
 
     let card = document.createElement("div");
+card.className = "card";   // 🔥 이거 추가
 
     card.style = `
     width:240px;
@@ -1295,6 +1307,7 @@ function renderSearchResults(){
     let prob = calculateProbability(u);
 
     let card = document.createElement("div");
+card.className = "card";   // 🔥 이거 추가
 
 card.onclick = () => {
   showApplicants(u.name);
