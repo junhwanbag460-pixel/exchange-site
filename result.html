@@ -125,6 +125,16 @@ margin-top:20px;
   <div class="title">🧠 최적 합격 전략</div>
   <div id="optimalStrategyBox" class="sub"></div>
 </div>  
+
+<div class="card">
+  <div class="title">🔄 지망 순서 시뮬레이션</div>
+  <div id="simulationBox" class="sub"></div>
+</div>
+
+<div class="card">
+  <div class="title">🏆 실제 배정 시뮬레이션</div>
+  <div id="realMatchingBox" class="sub"></div>
+</div>  
   
 <h3>📊 내 점수 기준 추천 대학</h3>
 
@@ -447,6 +457,8 @@ let candidates = data
 candidates.forEach(u=>{
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
+
+  u.range = calculatePredictedRange(u); // 🔥 여기에 저장
   u.diff = Math.abs(myScore - cutoff);
 });
 
@@ -457,7 +469,9 @@ candidates.sort((a,b)=>a.diff-b.diff);
 generateStrategy(candidates);
 generateAutoCombination(candidates);
 generateOptimalCombination(candidates);
-
+simulateBestOrder(candidates);
+simulateRealMatching();  
+  
 // 출력
 candidates.slice(0,5).forEach(u=>{
 
@@ -481,11 +495,11 @@ else{
 let status="";
 let color="black";
 
-if(prob >= 70){
+if(myScore >= u.range.max){
   status="🟢 안정";
   color="green";
 }
-else if(prob >= 40){
+else if(myScore >= u.range.min){
   status="🟡 가능";
   color="orange";
 }
@@ -499,7 +513,12 @@ else{
   row.innerHTML=`
   <td>${u.name}</td>
   <td>${u.country}</td>
-  <td>${!isNaN(cutoff)?cutoff.toFixed(2):"-"}</td>
+  <td>
+${cutoff.toFixed(2)}<br>
+<span style="font-size:12px;color:#888">
+(${u.range.min} ~ ${u.range.max})
+</span>
+</td>
   <td>${myScore.toFixed(2)}</td>
   <td style="color:${color};font-weight:bold">
   ${status} (${prob}%)
@@ -539,6 +558,7 @@ let cutoff = parseFloat(u.cutoff);
 if(isNaN(cutoff)){
   cutoff = myScore;
 }
+let range = calculatePredictedRange(u);  
 
 // ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
 let prob = calculateProbabilityAdvanced(u.name);
@@ -599,7 +619,8 @@ ${prob}%
 </div>
 
 <div style="font-size:12px;color:#888">
-컷라인 ${cutoff.toFixed(2)} / 내 점수 ${myScore.toFixed(2)}
+컷라인 ${cutoff.toFixed(2)} (${range.min} ~ ${range.max})<br>
+내 점수 ${myScore.toFixed(2)}
 </div>
 
 <div style="font-size:12px;color:#666;margin-top:4px">
@@ -637,7 +658,9 @@ function calculateProbabilityAdvanced(universityName){
 
     if(!target) continue;
 
-    if(myScore >= target.cutoffSim){
+    let range = calculatePredictedRange(target);
+
+if(myScore >= range.min){
       success++;
     }
   }
@@ -859,6 +882,209 @@ function loadStatusData(callback){
     console.error("status 불러오기 실패");
   });
 }
+
+function simulateBestOrder(universities){
+
+  let bestOrder = [];
+  let bestProb = 0;
+
+  let list = universities.slice(0,5);
+
+  function permute(arr, l){
+    if(l === arr.length){
+      evaluate(arr);
+      return;
+    }
+
+    for(let i=l;i<arr.length;i++){
+      [arr[l], arr[i]] = [arr[i], arr[l]];
+      permute(arr, l+1);
+      [arr[l], arr[i]] = [arr[i], arr[l]];
+    }
+  }
+
+  function evaluate(order){
+
+    let failProb = 1;
+
+    order.forEach(u=>{
+      let p = calculateProbabilityAdvanced(u.name) / 100;
+      failProb *= (1 - p);
+    });
+
+    let successProb = 1 - failProb;
+
+    if(successProb > bestProb){
+      bestProb = successProb;
+      bestOrder = [...order];
+    }
+  }
+
+  permute(list, 0);
+
+  let html = `<b>최대 합격 확률: ${(bestProb*100).toFixed(1)}%</b><br><br>`;
+
+  bestOrder.forEach((u,i)=>{
+    html += `${i+1}지망: ${u.name}<br>`;
+  });
+
+  document.getElementById("simulationBox").innerHTML = html;
+}  
+
+function simulateRealMatching(){
+
+  // 🔥 내 선택 미리 한 번만 계산
+let myChoicesGlobal = [];
+
+document.querySelectorAll("#resultTable tr").forEach(row=>{
+  let uni = row.querySelector(".uni")?.dataset.uni;
+  if(uni && !myChoicesGlobal.includes(uni)){
+    myChoicesGlobal.push(uni);
+  }
+});
+
+myChoicesGlobal = myChoicesGlobal.slice(0,5);
+
+  let iterations = 50;
+  let results = {};
+
+  for(let t=0;t<iterations;t++){
+
+    let universities = {};
+    let applicants = [];
+
+    statusData.forEach(u=>{
+      universities[u.name] = {
+        capacity: Number(u.seats) || 0,
+        accepted: []
+      };
+    });
+
+// ✅ 1. 가짜 지원자 생성
+statusData.forEach(u=>{
+  let count = Number(u.applicants) || 0;
+
+  for(let i=0;i<count;i++){
+
+    let base = (parseFloat(u.cutoff) || myScore);
+    let score = base + (Math.random() - 0.5) * 1.5;
+
+    let typeRand = Math.random();
+    let strategy = typeRand < 0.3 ? "safe" : typeRand < 0.6 ? "balanced" : "challenge";
+
+    let sorted = statusData.slice().sort((a,b)=>{
+
+      let diffA = score - (parseFloat(a.cutoff) || score);
+      let diffB = score - (parseFloat(b.cutoff) || score);
+
+      let popA = Number(a.applicants) || 1;
+      let popB = Number(b.applicants) || 1;
+
+      let scoreA, scoreB;
+
+      if(strategy === "safe"){
+        scoreA = diffA + popA * 0.01;
+        scoreB = diffB + popB * 0.01;
+        return scoreB - scoreA;
+      }
+      else if(strategy === "challenge"){
+        scoreA = diffA - popA * 0.01;
+        scoreB = diffB - popB * 0.01;
+        return scoreA - scoreB;
+      }
+      else{
+        scoreA = Math.abs(diffA) - popA * 0.005;
+        scoreB = Math.abs(diffB) - popB * 0.005;
+        return scoreA - scoreB;
+      }
+    });
+
+    let choices = sorted.slice(0,5).map(x=>x.name);
+
+    applicants.push({
+      score: score,
+      choices: choices
+    });
+  }
+});
+
+
+// ✅ 2. 내 지원자 추가 (for문 밖)
+let myChoices = myChoicesGlobal;
+
+applicants.push({
+  score: myScore,
+  choices: myChoices,
+  me: true
+});
+
+
+// ✅ 3. 정렬 + 배정
+applicants.sort((a,b)=>b.score - a.score);
+
+applicants.forEach(a=>{
+  for(let uni of a.choices){
+    if(universities[uni] && universities[uni].accepted.length < universities[uni].capacity){
+      universities[uni].accepted.push(a);
+      break;
+    }
+  }
+});
+
+
+// ✅ 4. 결과 계산
+let result = "미선발";
+for(let uni in universities){
+  if(universities[uni].accepted.find(a=>a.me)){
+    result = uni;
+    break;
+  }
+}
+
+results[result] = (results[result] || 0) + 1;   
+}    
+
+  // 출력
+  let html = "<b>📊 배정 확률</b><br><br>";
+
+  Object.entries(results)
+    .sort((a,b)=>b[1]-a[1])
+    .forEach(([uni,count])=>{
+      html += `
+<div style="margin-bottom:6px">
+  ${uni} → <b>${(count/iterations*100).toFixed(1)}%</b>
+</div>
+`;
+    });
+
+  document.getElementById("realMatchingBox").innerHTML = html;
+}
+
+function calculatePredictedRange(university){
+
+  let base = parseFloat(university.cutoff);
+  if(isNaN(base)) base = myScore;
+
+  let applicants = Number(university.applicants) || 1;
+  let seats = Number(university.seats) || 1;
+
+  let competition = applicants / seats;
+
+  // 🔥 변동성 (경쟁률 기반)
+  let volatility = Math.log(competition + 1) * 0.8;
+
+  // 🔥 상승 압력
+  let pressure = (competition - 1) * 0.5;
+
+  // 🔥 범위 계산
+  let min = base + pressure - volatility;
+  let max = base + pressure + volatility;
+
+  return {
+    min: Number(min.toFixed(2)),
+    max: Number(max.toFixed(2))
+  };
+}  
   
 </script>
 </body>
