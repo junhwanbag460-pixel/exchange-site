@@ -98,15 +98,31 @@ renderCards();
 
 function calculateProbability(u){
 
-  let cutoff = parseFloat(u.cutoff);
-  if(isNaN(cutoff)) cutoff = myScore;
+  let scores = (u.score_distribution || "")
+  .split(",")
+  .map(Number)
+  .filter(x => !isNaN(x));
 
-  let applicants = Number(u.applicants) || 1;
-  let seats = Number(u.seats) || 1;
+if(scores.length === 0){
+  return 50;
+}
 
-  let diff = myScore - cutoff;
+scores.sort((a,b)=>b-a);
 
-  let prob = 1 / (1 + Math.exp(-0.7 * diff));
+let rank = scores.filter(s => s > myScore).length + 1;
+
+let seats = Number(u.seats) || 1;
+
+let prob;
+
+if(rank <= seats){
+  prob = 90;
+} else {
+  prob = 85 - (rank - seats) * 10;
+}
+
+prob = Math.max(5, Math.min(95, prob));
+return Math.round(prob);
 
   let rate = applicants / seats;
   prob *= Math.exp(-0.15 * (rate - 1));
