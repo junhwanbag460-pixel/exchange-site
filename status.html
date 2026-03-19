@@ -51,11 +51,8 @@ fetch(API_URL+"?action=status")
 .then(data=>{
 
 universityData = data;
-renderCards();
-
-  universityData = data;
-probabilityCache = {};   // ⭐ 이거 추가
-renderCards();
+probabilityCache = {};
+renderCards();;
 
 });
 }
@@ -104,8 +101,8 @@ renderCards();
 function calculateProbability(u){
 
   if(probabilityCache[u.name] !== undefined){
-    return probabilityCache[u.name].prob;
-  }
+  return probabilityCache[u.name].prob || probabilityCache[u.name];
+}
 
   let baseScores = (u.score_distribution || "")
     .split(",")
@@ -211,7 +208,11 @@ if(isNaN(cutoff)){
   cutoff = myScore;  // ⭐ 핵심 (중립값)
 }
 
-cutoff = Number(cutoff.toFixed(2));
+if(typeof cutoff === "number"){
+  cutoff = Number(cutoff.toFixed(2));
+} else {
+  cutoff = myScore;
+}
 
 // 상태 판단
 let status = "";
@@ -276,7 +277,8 @@ let card = document.createElement("div");
 card.onclick = () => openModal(u);
 
 let prob = calculateProbability(u);
-let cutoff = probabilityCache[u.name]?.cutoff;
+let cache = probabilityCache[u.name];
+let cutoff = cache && cache.cutoff;
 
 if(typeof cutoff !== "number"){
   cutoff = "-";
