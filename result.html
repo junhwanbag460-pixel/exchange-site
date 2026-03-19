@@ -677,24 +677,34 @@ function calculateProbability(u){
 
   if(probabilityCache[u.name]) return probabilityCache[u.name];
 
-  let cutoff = parseFloat(u.cutoff);
-  if(isNaN(cutoff)) cutoff = myScore;
-
-  let applicants = Number(u.applicants) || 1;
   let seats = Number(u.seats) || 1;
 
-  let diff = myScore - cutoff;
+  // 🔥 score_distribution 사용
+  let scores = (u.score_distribution || "")
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x));
 
-  let prob = 1 / (1 + Math.exp(-0.7 * diff));
+  if(scores.length === 0){
+    return 50;
+  }
 
-  let rate = applicants / seats;
-  prob *= Math.exp(-0.15 * (rate - 1));
+  // 🔥 정렬 (필수)
+  scores.sort((a,b)=>b-a);
 
-  prob = prob * 100;
+  // 🔥 내 순위 계산
+  let rank = scores.filter(s => s > myScore).length + 1;
 
-  if(prob > 90) prob = 90;
-  if(prob < 10) prob = 10;
+  let prob;
 
+  if(rank <= seats){
+    prob = 90;
+  } else {
+    let diff = rank - seats;
+    prob = 85 - diff * 10;
+  }
+
+  prob = Math.max(5, Math.min(95, prob));
   prob = Math.round(prob);
 
   probabilityCache[u.name] = prob;
@@ -993,15 +1003,18 @@ statusData.forEach(u=>{
 
   for(let i=0;i<count;i++){
 
-    let base = (parseFloat(u.cutoff) || myScore);
-    let prob = calculateProbability(u) / 100;
+    let scores = (u.score_distribution || "")
+  .split(",")
+  .map(Number)
+  .filter(x => !isNaN(x));
 
-// 점수 대신 확률 기반 합격 시뮬레이션
-let isPass = Math.random() < prob;
+let score;
 
-let score = isPass 
-  ? base + Math.random() * 0.5   // 합격권
-  : base - Math.random() * 0.5;  // 탈락권
+if(scores.length > 0){
+  score = scores[Math.floor(Math.random() * scores.length)];
+}else{
+  score = myScore + (Math.random() - 0.5);
+}
 
     let typeRand = Math.random();
     let strategy = typeRand < 0.3 ? "safe" : typeRand < 0.6 ? "balanced" : "challenge";
