@@ -138,7 +138,7 @@ function openModal(u){
 document.getElementById("modal").style.display="block";
 
 // 컷라인 정리
-let prob = calculateProbability(u);
+let result = simulateAssignment(u.name);
 let cutoff = probabilityCache[u.name]?.cutoff;
 
 if(!cutoff) cutoff = myScore;
@@ -215,7 +215,7 @@ let card = document.createElement("div");
 
 card.onclick = () => openModal(u);
 
-let prob = calculateProbability(u);
+let result = simulateAssignment(u.name);
 let cache = probabilityCache[u.name];
 let cutoff = cache && cache.cutoff;
 
@@ -247,7 +247,7 @@ card.innerHTML = `
 <p>🔥 경쟁률: ${u.rate}</p>
 <p>📈 컷라인: ${cutoff}</p>
 <p style="font-weight:bold;color:${color}">
-🎯 ${prob}%
+🎯 ${result ? "합격" : "탈락"}
 </p>
 `;
 
