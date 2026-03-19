@@ -481,7 +481,27 @@ let candidates = data
 
 // diff 계산
 candidates.forEach(u=>{
-  let result = simulateAssignment(u.name);
+  let testChoices = [...myChoices];
+
+// 아직 선택 안 했으면 1지망으로 테스트
+if(testChoices.length === 0){
+  testChoices = [u.name];
+}else{
+  testChoices[testChoices.length - 1] = u.name;
+}
+
+let assigned = simulateFullAssignment(testChoices);
+
+let status="";
+let color="black";
+
+if(assigned === u.name){
+  status="🟢 추천";
+  color="green";
+}else{
+  status="🔴 비추천";
+  color="red";
+}
   u.diff = 0; // 정렬용 (단순 유지)
 });
 
@@ -491,7 +511,16 @@ candidates.sort((a,b)=>a.diff-b.diff);
 // 출력
 candidates.slice(0,5).forEach(u=>{
 
-  let result = simulateAssignment(u.name);
+  let testChoices = [...myChoices];
+
+if(testChoices.length === 0){
+  testChoices = [u.name];
+}else{
+  testChoices[testChoices.length - 1] = u.name;
+}
+
+let assigned = simulateFullAssignment(testChoices);
+let result = (assigned === u.name);
 
   let status="";
   let color="black";
@@ -556,7 +585,16 @@ function loadProbabilityCards(){
   );
 
   data.forEach(u=>{
-    let result = simulateAssignment(u.name);
+    let testChoices = [...myChoices];
+
+if(testChoices.length === 0){
+  testChoices = [u.name];
+}else{
+  testChoices[testChoices.length - 1] = u.name;
+}
+
+let assigned = simulateFullAssignment(testChoices);
+let result = (assigned === u.name);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
@@ -742,21 +780,19 @@ function calculateDynamicCutoff(u){
   return Number(predicted.toFixed(2));
 }  
 
-function simulateAssignment(targetUniversity){
+function simulateFullAssignment(testChoices){
 
-  // ⭐ 서버에서 받은 실제 데이터 사용
   let students = realStudents.map(s => ({
     score: s.score,
     choices: [...s.choices],
     currentChoice: 0,
-    assigned: null,
-    email: s.email
+    assigned: null
   }));
 
-  // ⭐ 내 지원 (가상 추가)
+  // ⭐ 내 지원 추가 (핵심)
   students.push({
     score: myScore,
-    choices: [targetUniversity],
+    choices: testChoices,
     currentChoice: 0,
     assigned: null,
     me: true
@@ -816,7 +852,7 @@ function simulateAssignment(targetUniversity){
   }
 
   let me = students.find(s=>s.me);
-  return me.assigned === targetUniversity;
+  return me.assigned; // ⭐ 대학 이름 반환
 }
 
 function autoSubmitApplication(choices){
