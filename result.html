@@ -528,7 +528,7 @@ candidates.slice(0,5).forEach(u=>{
   let cutoff = calculateDynamicCutoff(u);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbability(u);
+  let prob = calculateSimulatedProbability(u.name);
 
   let trend = "";
 
@@ -615,7 +615,7 @@ function loadProbabilityCards(){
   );
 
   data.forEach(u=>{
-    let prob = calculateProbability(u);
+    let prob = calculateSimulatedProbability(u.name);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
@@ -691,6 +691,173 @@ function calculateProbability(u){
   probabilityCache[u.name] = prob;
   return prob;
 }
+
+function calculateProbabilityWithScore(u, score){
+
+  let scores = (u.score_distribution || "")
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x));
+
+  if(scores.length === 0) return 50;
+
+  scores.sort((a,b)=>b-a);
+
+  let seats = Number(u.seats) || 1;
+
+  let rank = scores.filter(s => s > score).length + 1;
+
+  let cutoff = calculateDynamicCutoff(u);
+  if(isNaN(cutoff)) cutoff = score;
+
+  let diff = score - cutoff;
+
+  let scoreFactor = 1 / (1 + Math.exp(-diff * 2.5));
+  let rankFactor = 1 - (rank - 1) / scores.length;
+  let seatFactor = seats / scores.length;
+
+  let prob =
+    scoreFactor * 0.5 +
+    rankFactor * 0.3 +
+    seatFactor * 0.2;
+
+  return prob * 100;
+}  
+
+function calculateSimulatedProbability(targetUniversity){
+
+  let cacheKey = "SIM_" + targetUniversity;
+  if(probabilityCache[cacheKey] !== undefined) return probabilityCache[cacheKey];
+
+  let iterations = 800; // 속도 고려 (처음엔 100~150 추천)
+  let success = 0;
+
+  for(let t=0; t<iterations; t++){
+
+    let universities = {};
+    let applicants = [];
+
+    // 대학 초기화
+    statusData.forEach(u=>{
+      universities[u.name] = {
+        capacity: Math.max(1, Number(u.seats) || 1),
+        accepted: []
+      };
+    });
+
+    // 🔥 지원자 생성
+    statusData.forEach(u=>{
+      let count = Number(u.applicants) || 0;
+
+      for(let i=0;i<count;i++){
+
+        let scores = (u.score_distribution || "")
+          .split(",")
+          .map(Number)
+          .filter(x => !isNaN(x));
+
+        let score = scores.length
+          ? scores[Math.floor(Math.random() * scores.length)]
+          : myScore + (Math.random() - 0.5);
+
+        // 🔥 지원 전략
+        let rand = Math.random();
+        let strategy = rand < 0.3 ? "safe" : rand < 0.6 ? "balanced" : "challenge";
+
+        let sorted = statusData.slice().sort((a,b)=>{
+          let pa = calculateProbabilityWithScore(a, score);
+          let pb = calculateProbabilityWithScore(b, score);
+
+          if(strategy === "safe") return pb - pa;
+          if(strategy === "challenge") return pa - pb;
+          return Math.abs(50 - pa) - Math.abs(50 - pb);
+        });
+
+        let choices = [];
+        for(let c=0;c<5;c++){
+          let weights = sorted.map(u=>{
+  let cutoff = calculateDynamicCutoff(u);
+  let diff = score - cutoff;
+
+  let popularity = Number(u.applicants) || 1;
+
+  return (
+    popularity * 0.6 +
+    Math.max(0, diff) * 10
+  );
+});
+
+let total = weights.reduce((a,b)=>a+b,0);
+let r = Math.random() * total;
+
+let acc = 0;
+let picked;
+
+for(let i=0;i<sorted.length;i++){
+  acc += weights[i];
+  if(r <= acc){
+    picked = sorted[i];
+    break;
+  }
+}
+          if(!choices.includes(picked.name)){
+            choices.push(picked.name);
+          }
+        }
+
+        applicants.push({ score, choices });
+      }
+    });
+
+    // 🔥 내 지원 (핵심)
+let myChoices = [];
+
+document.querySelectorAll("#resultTable tr").forEach(row=>{
+  let uni = row.querySelector(".uni")?.dataset.uni;
+  if(uni && !myChoices.includes(uni)){
+    myChoices.push(uni);
+  }
+});
+
+myChoices = myChoices.slice(0,5);
+
+applicants.push({
+  score: myScore,
+  choices: myChoices,
+  me: true
+});
+
+    // 배정
+    applicants.sort((a,b)=>b.score - a.score);
+
+    applicants.forEach(a=>{
+      for(let uni of a.choices){
+        if(universities[uni].accepted.length < universities[uni].capacity){
+          universities[uni].accepted.push(a);
+          break;
+        }
+      }
+    });
+
+    if(universities[targetUniversity].accepted.find(a=>a.me)){
+      success++;
+    }
+  }
+
+  let raw = (success / iterations);
+
+// 🔥 현실 보정 (경쟁률 기반)
+let competition = statusData.find(u=>u.name===targetUniversity);
+let rate = (competition?.applicants || 1) / (competition?.seats || 1);
+
+// 경쟁률 높을수록 확률 깎기
+let adjusted = raw * (1 / (1 + 0.3 * (rate - 1)));
+
+let result = Math.round(adjusted * 100);
+  probabilityCache[cacheKey] = result;
+
+  return result;
+}  
   
 function generateAutoCombination(universities){
 
@@ -702,7 +869,7 @@ function generateAutoCombination(universities){
     let cutoff = calculateDynamicCutoff(u);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbability(u);
+    let prob = calculateSimulatedProbability(u.name);
 
     if(prob >= 70) safe.push(u);
     else if(prob >= 40) match.push(u);
@@ -757,7 +924,7 @@ let diffB = Math.abs(myScore - calculateDynamicCutoff(b));
     let cutoff = calculateDynamicCutoff(u);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbability(u);
+    let prob = calculateSimulatedProbability(u.name);
 
     if(prob >= 70){
       result.safe.push(u.name);
@@ -804,7 +971,7 @@ let enriched = universities.map(u=>{
   let cutoff = calculateDynamicCutoff(u);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbability(u);
+  let prob = calculateSimulatedProbability(u.name);
 
   let diff = myScore - cutoff;
 
@@ -1032,8 +1199,8 @@ if(scores.length > 0){
 
     let sorted = statusData.slice().sort((a,b)=>{
 
-  let probA = calculateProbability(a);
-  let probB = calculateProbability(b);
+ let probA = calculateProbabilityWithScore(a, score);
+ let probB = calculateProbabilityWithScore(b, score);
 
   if(strategy === "safe"){
     return probB - probA;
@@ -1050,7 +1217,32 @@ if(scores.length > 0){
     let choices = [];
 
 for(let c=0;c<5;c++){
-  let picked = pickUniversity(sorted, strategy);
+  // 🔥 현실 기반 선택 (인기 + 컷라인 반영)
+let weights = sorted.map(u=>{
+  let cutoff = calculateDynamicCutoff(u);
+  let diff = score - cutoff;
+
+  let popularity = Number(u.applicants) || 1;
+
+  return (
+    popularity * 0.6 +        // 인기 (지원자 수)
+    Math.max(0, diff) * 10    // 점수 여유
+  );
+});
+
+let total = weights.reduce((a,b)=>a+b,0);
+let r = Math.random() * total;
+
+let acc = 0;
+let picked;
+
+for(let i=0;i<sorted.length;i++){
+  acc += weights[i];
+  if(r <= acc){
+    picked = sorted[i];
+    break;
+  }
+}
   if(!choices.includes(picked.name)){
     choices.push(picked.name);
   }
@@ -1078,7 +1270,8 @@ applicants.push({
 applicants.sort((a,b)=>b.score - a.score);
 
 applicants.forEach(a=>{
-  for(let uni of a.choices){
+  for(let choice of a.choices){
+  let uni = typeof choice === "string" ? choice : choice.name;
     if(universities[uni] && universities[uni].accepted.length < universities[uni].capacity){
       universities[uni].accepted.push(a);
       break;
@@ -1158,8 +1351,8 @@ function simulateWithStrategy(userStrategy){
           let strategy = rand < 0.3 ? "safe" : rand < 0.6 ? "balanced" : "challenge";
 
           let sorted = statusData.slice().sort((a,b)=>{
-            let pa = calculateProbability(a);
-            let pb = calculateProbability(b);
+ let pa = calculateProbabilityWithScore(a, score);
+ let pb = calculateProbabilityWithScore(b, score);
 
             if(strategy === "safe") return pb - pa;
             if(strategy === "challenge") return pa - pb;
@@ -1304,7 +1497,7 @@ function renderSearchResults(){
 
   filtered.forEach(u=>{
 
-    let prob = calculateProbability(u);
+    let prob = calculateSimulatedProbability(u.name);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
