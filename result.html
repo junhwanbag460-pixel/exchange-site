@@ -575,14 +575,12 @@ ${status} (${prob}%)
 
 loadStatusData(()=>{
   loadRecommendedUniversities();
-  loadProbabilityCards();
   loadTopUniversities();
 });
 
 setInterval(()=>{
   loadStatusData(()=>{
     loadTopUniversities();
-    loadRecommendedUniversities(); // 🔥 추가
   });
 },10000);
 
@@ -1259,11 +1257,14 @@ function renderSearchResults(){
 
   container.innerHTML = "";
 
-  // 🔥 아무것도 안 쳤으면 아무것도 안 보여줌
   if(keyword === ""){
-    message.style.display = "block";
-    return;
-  }
+  message.style.display = "block";
+
+  // 🔥 카드도 같이 제거
+  document.getElementById("probabilityCards").innerHTML = "";
+
+  return;
+}
 
   message.style.display = "none";
 
