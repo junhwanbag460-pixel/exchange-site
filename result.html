@@ -706,7 +706,16 @@ function renderSearchResults(){
 
   filtered.forEach(u=>{
 
-    let result = simulateAssignment(u.name);
+    let testChoices = [...myChoices];
+
+if(testChoices.length === 0){
+  testChoices = [u.name];
+}else{
+  testChoices[testChoices.length - 1] = u.name;
+}
+
+let assigned = simulateFullAssignment(testChoices);
+let result = (assigned === u.name);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
