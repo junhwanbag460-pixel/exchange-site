@@ -160,6 +160,8 @@ let realStudents = [];   // ⭐ 추가
 
 let myScore = 0;
 let assignedUniversity = "";
+let myBaseInfo = {};
+let myChoices = [];  
   
 let userEmail=localStorage.getItem("userEmail");
 
@@ -182,6 +184,12 @@ data.forEach((r, i)=>{
   myScore = Number(r.total);
   localStorage.setItem("myScore", myScore);
 
+  // ⭐ 추가
+  myBaseInfo = {
+    gpa: r.gpa,
+    language: r.language,
+    lang_score: r.lang_score
+  };
 }
   
   let row=document.createElement("tr");
@@ -666,9 +674,14 @@ function renderSearchResults(){
 card.className = "card";   // 🔥 이거 추가
 
 card.onclick = () => {
+
+  // ⭐ 선택 반영
+  selectUniversity(u.name);
+
+  // 기존 기능 유지
   showApplicants(u.name);
   document.getElementById("applicants").scrollIntoView({ behavior: "smooth" });
-};
+};;
 
     card.style = `
     width:220px;
@@ -805,6 +818,48 @@ function simulateAssignment(targetUniversity){
   let me = students.find(s=>s.me);
   return me.assigned === targetUniversity;
 }
+
+function autoSubmitApplication(choices){
+
+  fetch(API_URL, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "submit",
+      email: userEmail,
+
+      // ⭐ 기존 값 유지 (필수)
+      gpa: myBaseInfo.gpa,
+      language: myBaseInfo.language,
+      lang_score: myBaseInfo.lang_score,
+      total: myScore,
+
+      choice1: choices[0] || "",
+      choice2: choices[1] || "",
+      choice3: choices[2] || "",
+      choice4: choices[3] || "",
+      choice5: choices[4] || ""
+    })
+  })
+  .then(()=>{
+    location.reload(); // 간단하게 전체 갱신
+  });
+
+}
+
+function selectUniversity(name){
+
+  if(myChoices.includes(name)) return;
+
+  if(myChoices.length >= 5){
+    alert("최대 5개까지 선택 가능");
+    return;
+  }
+
+  myChoices.push(name);
+
+  // 🔥 핵심
+  autoSubmitApplication(myChoices);
+}  
   
 </script>
 </body>
