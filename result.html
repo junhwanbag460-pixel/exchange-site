@@ -328,7 +328,12 @@ let scores = data.map(d=>Number(d.total)).sort((a,b)=>b-a);
 
 let cutoffIndex = Math.min(seats - 1, scores.length - 1);
 
-cutoff = scores[cutoffIndex];
+cutoff = calculateDynamicCutoff({
+  cutoff: scores[cutoffIndex],
+  applicants: applicants,
+  seats: seats,
+  score_distribution: scores.join(",")
+});
   
 if(cutoff !== undefined){
   html += "<p>현재 합격 예상선: "+Number(cutoff).toFixed(2)+"</p>";
@@ -489,7 +494,7 @@ let candidates = data
 
 // diff 계산
 candidates.forEach(u=>{
-  let cutoff = parseFloat(u.cutoff);
+  let cutoff = calculateDynamicCutoff(u);
   if(isNaN(cutoff)) cutoff = myScore;
 
   u.range = calculatePredictedRange(u); // 🔥 여기에 저장
@@ -509,7 +514,7 @@ simulateRealMatching();
 // 출력
 candidates.slice(0,5).forEach(u=>{
 
-  let cutoff=parseFloat(u.cutoff);
+  let cutoff = calculateDynamicCutoff(u);
   if(isNaN(cutoff)) cutoff = myScore;
 
   let prob = calculateProbability(u);
@@ -536,7 +541,7 @@ scores.sort((a,b)=>b-a);
 let rank = scores.filter(s => s > myScore).length + 1;
 let seats = Number(u.seats) || 1;
 
-let diff = rank - seats;
+let diff = myScore - cutoff;
 
 let status="";
 let color="black";
@@ -598,7 +603,7 @@ document.getElementById("recommendTable").style.display = keyword ? "none" : "";
 
 data.forEach(u=>{
 
-let cutoff = parseFloat(u.cutoff);
+let cutoff = calculateDynamicCutoff(u);
 
 // 컷라인 없으면 중립 처리
 if(isNaN(cutoff)){
@@ -703,7 +708,7 @@ function calculateProbability(u){
 
   let diff = rank - seats;
 
-  let prob = 100 / (1 + Math.exp(diff * 0.8));
+  let prob = 100 / (1 + Math.exp(-diff * 1.2));
 prob = Math.round(prob);
 
 if(prob < 5) prob = 5;
@@ -720,7 +725,7 @@ function generateAutoCombination(universities){
   let reach = [];
 
   universities.forEach(u=>{
-    let cutoff = parseFloat(u.cutoff);
+    let cutoff = calculateDynamicCutoff(u);
     if(isNaN(cutoff)) cutoff = myScore;
 
     let prob = calculateProbability(u);
@@ -775,7 +780,7 @@ function generateStrategy(universities){
   };
 
   universities.forEach(u=>{
-    let cutoff = parseFloat(u.cutoff);
+    let cutoff = calculateDynamicCutoff(u);
     if(isNaN(cutoff)) cutoff = myScore;
 
     let prob = calculateProbability(u);
@@ -822,7 +827,7 @@ if(universities.length < 5){
 
   // 확률 계산 포함
 let enriched = universities.map(u=>{
-  let cutoff = parseFloat(u.cutoff);
+  let cutoff = calculateDynamicCutoff(u);
   if(isNaN(cutoff)) cutoff = myScore;
 
   let prob = calculateProbability(u);
@@ -1190,6 +1195,40 @@ card.onclick = () => {
     container.appendChild(card);
 
   });
+}  
+
+function calculateDynamicCutoff(u){
+  let base = parseFloat(u.cutoff);
+  if(isNaN(base)) base = myScore;
+
+  let applicants = Number(u.applicants) || 1;
+  let seats = Number(u.seats) || 1;
+
+  let scores = (u.score_distribution || "")
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x))
+    .sort((a,b)=>b-a);
+
+  if(scores.length === 0) return base;
+
+  let competition = applicants / seats;
+  let pressure_comp = Math.log(competition + 1);
+
+  let topN = scores.slice(0, seats * 2);
+  let leaveCount = topN.filter(s => s > base + 1).length;
+  let pressure_top = - (leaveCount / topN.length || 0);
+
+  let mid = scores.slice(seats, seats * 3);
+  let pressure_mid = mid.length / scores.length;
+
+  let predicted =
+    base +
+    pressure_comp * 0.8 +
+    pressure_mid * 0.5 +
+    pressure_top * 1.2;
+
+  return Number(predicted.toFixed(2));
 }  
   
 </script>
