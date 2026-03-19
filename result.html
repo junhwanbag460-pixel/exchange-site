@@ -492,6 +492,13 @@ data.slice(0,5).forEach((u,i)=>{
 
 function loadRecommendedUniversities(){
 
+if(!simCacheReady){
+  statusData.forEach(u=>{
+    calculateSimulatedProbability(u.name);
+  });
+  simCacheReady = true;
+}  
+
 let data = statusData;
 
 let table=document.getElementById("recommendTable");
@@ -585,15 +592,18 @@ ${status} (${prob}%)
 }
 
 loadStatusData(()=>{
-  loadRecommendedUniversities();
   loadTopUniversities();
+
+  setTimeout(()=>{
+    loadRecommendedUniversities();
+  }, 500);
 });
 
 setInterval(()=>{
   loadStatusData(()=>{
     loadTopUniversities();
   });
-},10000);
+},20000);
 
 function loadProbabilityCards(){
 
@@ -726,10 +736,21 @@ function calculateProbabilityWithScore(u, score){
 
 function calculateSimulatedProbability(targetUniversity){
 
+let myChoices = [];
+
+document.querySelectorAll("#resultTable tr").forEach(row=>{
+  let uni = row.querySelector(".uni")?.dataset.uni;
+  if(uni && !myChoices.includes(uni)){
+    myChoices.push(uni);
+  }
+});
+
+myChoices = myChoices.slice(0,5);
+  
   let cacheKey = "SIM_" + targetUniversity;
   if(probabilityCache[cacheKey] !== undefined) return probabilityCache[cacheKey];
 
-  let iterations = 800; // 속도 고려 (처음엔 100~150 추천)
+  let iterations = 200; // 속도 고려 (처음엔 100~150 추천)
   let success = 0;
 
   for(let t=0; t<iterations; t++){
@@ -808,18 +829,6 @@ for(let i=0;i<sorted.length;i++){
         applicants.push({ score, choices });
       }
     });
-
-    // 🔥 내 지원 (핵심)
-let myChoices = [];
-
-document.querySelectorAll("#resultTable tr").forEach(row=>{
-  let uni = row.querySelector(".uni")?.dataset.uni;
-  if(uni && !myChoices.includes(uni)){
-    myChoices.push(uni);
-  }
-});
-
-myChoices = myChoices.slice(0,5);
 
 applicants.push({
   score: myScore,
@@ -1057,7 +1066,8 @@ function loadStatusData(callback){
   .then(data=>{
   statusData = data;
 
-  probabilityCache = {}; // 🔥 반드시 추가
+  probabilityCache = {};
+simCacheReady = false;
 
   callback();
 renderSearchResults(); // 🔥 이거 추가
@@ -1156,7 +1166,7 @@ document.querySelectorAll("#resultTable tr").forEach(row=>{
 
 myChoicesGlobal = myChoicesGlobal.slice(0,5);
 
-  let iterations = 200;
+  let iterations = 80;
   let results = {};
 
   for(let t=0;t<iterations;t++){
@@ -1313,7 +1323,7 @@ finalResult = result;   // ⭐ 이 줄 추가
 
 function simulateWithStrategy(userStrategy){
 
-  let iterations = 400;
+  let iterations = 120;
   let results = {};
 
   for(let t=0;t<iterations;t++){
@@ -1459,9 +1469,17 @@ function calculatePredictedRange(university){
   };
 }  
 
+let debounceTimer;
+
 document.getElementById("searchBox").addEventListener("keyup", function(){
-  loadProbabilityCards();   // 🔥 이거 추가
-  renderSearchResults();
+
+  clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(()=>{
+    loadProbabilityCards();
+    renderSearchResults();
+  }, 300);
+
 });
 
 function renderSearchResults(){
