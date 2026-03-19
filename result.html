@@ -582,106 +582,53 @@ loadStatusData(()=>{
 setInterval(()=>{
   loadStatusData(()=>{
     loadTopUniversities();
-    loadProbabilityCards();
     loadRecommendedUniversities(); // 🔥 추가
   });
 },10000);
 
 function loadProbabilityCards(){
 
-let keyword = document.getElementById("searchBox")?.value?.trim() || "";  
+  let keyword = document.getElementById("searchBox")?.value?.trim() || "";  
 
-let data = statusData;
+  let container = document.getElementById("probabilityCards");
 
-let container = document.getElementById("probabilityCards");
-container.innerHTML = "";
+  // 🔥 검색 안 하면 카드 아예 제거
+  if(keyword === ""){
+    container.innerHTML = "";
+    return;
+  }
 
-// 🔥 검색 중이면 다른 UI 숨기기
-document.getElementById("probabilityCards").style.display = keyword ? "none" : "flex";
-document.getElementById("recommendTable").style.display = keyword ? "none" : "";  
+  container.innerHTML = "";
 
-data.forEach(u=>{
+  let data = statusData.filter(u =>
+    u.name.toLowerCase().includes(keyword.toLowerCase()) ||
+    u.country.toLowerCase().includes(keyword.toLowerCase())
+  );
 
-let cutoff = calculateDynamicCutoff(u);
+  data.forEach(u=>{
+    let prob = calculateProbability(u);
 
-// 컷라인 없으면 중립 처리
-if(isNaN(cutoff)){
-  cutoff = myScore;
-}
-let range = calculatePredictedRange(u);  
+    let card = document.createElement("div");
 
-// ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
-let prob = calculateProbability(u);
+    card.style = `
+    width:240px;
+    padding:18px;
+    border-radius:16px;
+    background:white;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    text-align:center;
+    `;
 
-  let trend = "";
+    card.innerHTML = `
+    <div style="font-weight:700">${u.name}</div>
+    <div style="color:#666">${u.country}</div>
+    <div style="font-size:20px;color:#3182f6;margin:8px 0">
+      ${prob}%
+    </div>
+    `;
 
-if(prob >= 75){
-  trend = "📈 상승";
-}
-else if(prob <= 40){
-  trend = "📉 하락";
-}
-else{
-  trend = "➡️ 유지";
-}
-
-// 상태 판단
-let status = "";
-let color = "";
-
-if(prob >= 75){
-  status = "🟢 안정";
-  color = "#e6f4ea";
-}
-else if(prob >= 45){
-  status = "🟡 가능";
-  color = "#fff8e1";
-}
-else{
-  status = "🔴 위험";
-  color = "#fdecea";
-}
-
-// 카드 생성
-let card = document.createElement("div");
-
-card.style = `
-width:240px;
-padding:18px;
-border-radius:16px;
-background:white;
-box-shadow:0 6px 18px rgba(0,0,0,0.08);
-text-align:center;
-`;
-
-card.innerHTML = `
-<div style="font-weight:700;font-size:16px;margin-bottom:8px">
-${u.name}
-</div>
-
-<div style="font-size:22px;font-weight:800;color:#3182f6">
-${prob}%
-</div>
-
-<div style="margin:6px 0">${status}</div>
-
-<div style="background:#eee;border-radius:10px;overflow:hidden;height:6px;margin:10px 0">
-  <div style="width:${prob}%;background:#3182f6;height:100%"></div>
-</div>
-
-<div style="font-size:12px;color:#888">
-컷라인 ${cutoff.toFixed(2)}<br>
-내 점수 ${myScore.toFixed(2)}
-</div>
-
-<div style="font-size:12px;color:#666;margin-top:4px">
-${trend}
-</div>
-`;
-
-container.appendChild(card);
-
-});
+    container.appendChild(card);
+  });
 }
 
 function calculateProbability(u){
@@ -1299,6 +1246,7 @@ function calculatePredictedRange(university){
 }  
 
 document.getElementById("searchBox").addEventListener("keyup", function(){
+  loadProbabilityCards();   // 🔥 이거 추가
   renderSearchResults();
 });
 
