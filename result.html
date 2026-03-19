@@ -753,6 +753,91 @@ function calculateDynamicCutoff(u){
 
   return Number(predicted.toFixed(2));
 }  
+
+function simulateAssignment(targetUniversity){
+
+  let students = [];
+
+  statusData.forEach(u=>{
+    let scores = (u.score_distribution || "")
+      .split(",")
+      .map(Number)
+      .filter(x => !isNaN(x));
+
+    scores.forEach(score=>{
+      students.push({
+        score: score,
+        choices: [u.name],
+        currentChoice: 0,
+        assigned: null
+      });
+    });
+  });
+
+  students.push({
+    score: myScore,
+    choices: [targetUniversity],
+    currentChoice: 0,
+    assigned: null,
+    me: true
+  });
+
+  students.sort((a,b)=>b.score-a.score);
+
+  let seatsMap = {};
+  statusData.forEach(u=>{
+    seatsMap[u.name] = Number(u.seats) || 1;
+  });
+
+  let changed = true;
+
+  while(changed){
+    changed = false;
+
+    let pools = {};
+
+    students.forEach(s=>{
+      if(s.assigned === null && s.currentChoice < s.choices.length){
+        let uni = s.choices[s.currentChoice];
+        if(!pools[uni]) pools[uni] = [];
+        pools[uni].push(s);
+      }
+    });
+
+    for(let uni in pools){
+
+      let candidates = pools[uni].slice();
+
+      students.forEach(s=>{
+        if(s.assigned === uni){
+          candidates.push(s);
+        }
+      });
+
+      candidates.sort((a,b)=>b.score-a.score);
+
+      let accepted = candidates.slice(0, seatsMap[uni]);
+      let rejected = candidates.slice(seatsMap[uni]);
+
+      accepted.forEach(s=>{
+        if(s.assigned !== uni){
+          s.assigned = uni;
+          changed = true;
+        }
+      });
+
+      rejected.forEach(s=>{
+        if(s.assigned === uni){
+          s.assigned = null;
+        }
+        s.currentChoice++;
+      });
+    }
+  }
+
+  let me = students.find(s=>s.me);
+  return me.assigned === targetUniversity;
+}  
   
 </script>
 </body>
