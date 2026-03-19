@@ -538,7 +538,6 @@ let scores = (u.score_distribution || "")
 
 scores.sort((a,b)=>b-a);
 
-let rank = scores.filter(s => s > myScore).length + 1;
 let seats = Number(u.seats) || 1;
 
 let diff = myScore - cutoff;
@@ -706,9 +705,11 @@ function calculateProbability(u){
   // 🔥 내 예상 순위
   let rank = scores.filter(s => s > myScore).length + 1;
 
-  let diff = rank - seats;
+  let cutoff = calculateDynamicCutoff(u);
 
-  let prob = 100 / (1 + Math.exp(-diff * 1.2));
+let diff = myScore - cutoff;
+
+let prob = 100 / (1 + Math.exp(-diff * 1.2));
 prob = Math.round(prob);
 
 if(prob < 5) prob = 5;
@@ -737,8 +738,8 @@ function generateAutoCombination(universities){
 
   // 정렬
   const sortFn = (a,b)=>{
-  let ca = parseFloat(a.cutoff);
-  let cb = parseFloat(b.cutoff);
+let ca = calculateDynamicCutoff(a);
+let cb = calculateDynamicCutoff(b);
   if(isNaN(ca)) ca = myScore;
   if(isNaN(cb)) cb = myScore;
   return Math.abs(myScore - ca) - Math.abs(myScore - cb);
@@ -768,8 +769,8 @@ function generateAutoCombination(universities){
 function generateStrategy(universities){
 
   universities.sort((a,b)=>{
-    let diffA = Math.abs(myScore - parseFloat(a.cutoff));
-    let diffB = Math.abs(myScore - parseFloat(b.cutoff));
+    let diffA = Math.abs(myScore - calculateDynamicCutoff(a));
+let diffB = Math.abs(myScore - calculateDynamicCutoff(b));
     return diffA - diffB;
   });
 
@@ -974,6 +975,33 @@ function simulateBestOrder(universities){
   document.getElementById("simulationBox").innerHTML = html;
 }  
 
+function weightedPick(arr, weights){
+  let r = Math.random();
+  let sum = 0;
+
+  for(let i=0;i<weights.length;i++){
+    sum += weights[i];
+    if(r < sum) return arr[i];
+  }
+
+  return arr[arr.length-1];
+}
+
+function pickUniversity(sorted, strategy){
+
+  if(strategy === "safe"){
+    return weightedPick(sorted, [0.4,0.25,0.2,0.1,0.05]);
+  }
+
+  if(strategy === "challenge"){
+    let reversed = [...sorted].reverse();
+    return weightedPick(reversed, [0.4,0.25,0.2,0.1,0.05]);
+  }
+
+  // balanced
+  return weightedPick(sorted, [0.2,0.3,0.3,0.1,0.1]);
+}  
+
 function simulateRealMatching(){
 
   // 🔥 내 선택 미리 한 번만 계산
@@ -988,10 +1016,14 @@ document.querySelectorAll("#resultTable tr").forEach(row=>{
 
 myChoicesGlobal = myChoicesGlobal.slice(0,5);
 
-  let iterations = 50;
+  let iterations = 200;
   let results = {};
 
   for(let t=0;t<iterations;t++){
+
+  let finalResult = "미선발";   // ⭐ 이 줄 추가
+
+  for(let round=0; round<4; round++){
 
     let universities = {};
     let applicants = [];
@@ -1042,7 +1074,14 @@ if(scores.length > 0){
 
 });
 
-    let choices = sorted.slice(0,5).map(x=>x.name);
+    let choices = [];
+
+for(let c=0;c<5;c++){
+  let picked = pickUniversity(sorted, strategy);
+  if(!choices.includes(picked.name)){
+    choices.push(picked.name);
+  }
+}
 
     applicants.push({
       score: score,
@@ -1084,8 +1123,11 @@ for(let uni in universities){
   }
 }
 
-results[result] = (results[result] || 0) + 1;   
-}    
+finalResult = result;   // ⭐ 이 줄 추가    
+
+} // round 끝
+    results[finalResult] = (results[finalResult] || 0) + 1;
+} // iteration 끝
 
   // 출력
   let html = "<b>📊 배정 확률</b><br><br>";
@@ -1105,7 +1147,7 @@ results[result] = (results[result] || 0) + 1;
 
 function calculatePredictedRange(university){
 
-  let base = parseFloat(university.cutoff);
+  let base = calculateDynamicCutoff(university);
   if(isNaN(base)) base = myScore;
 
   let applicants = Number(university.applicants) || 1;
