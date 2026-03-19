@@ -166,7 +166,7 @@ if(isNaN(cutoff)){
 cutoff = Number(cutoff.toFixed(2));
 
 // 확률 계산
-let prob = calculateProbability(cutoff, u.applicants, u.seats);
+let prob = calculateProbability(u);
 
 // 상태 판단
 let status = "";
@@ -238,13 +238,13 @@ let cutoff = parseFloat(u.cutoff);
 if(isNaN(cutoff)) cutoff = "-";
 else cutoff = cutoff.toFixed(2);
 
-calculateProbability(u)
+let prob = calculateProbability(u);
 
 let color;
 if(prob >= 80) color = "green";
 else if(prob >= 50) color = "orange";
-else color = "red";  
-
+else color = "red";
+  
 card.style = `
 width:220px;
 border:1px solid #ddd;
