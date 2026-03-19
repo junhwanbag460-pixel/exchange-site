@@ -37,7 +37,6 @@ const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZ
 
 let universityData=[];
 let currentSort="";
-  let probabilityCache = {};
 
 let chart;
 
@@ -51,7 +50,6 @@ fetch(API_URL+"?action=status")
 .then(data=>{
 
 universityData = data;
-probabilityCache = {};
 renderCards();;
 
 });
@@ -153,19 +151,16 @@ if(typeof cutoff === "number"){
 }
 
 // 상태 판단
+let result = simulateAssignment(u.name);
+
 let status = "";
 let color = "black";
 
-if(prob >= 80){
-  status = "🟢 안정";
+if(result){
+  status = "🟢 합격";
   color = "green";
-}
-else if(prob >= 50){
-  status = "🟡 적정";
-  color = "orange";
-}
-else{
-  status = "🔴 위험";
+}else{
+  status = "🔴 탈락";
   color = "red";
 }
 
@@ -215,7 +210,6 @@ let card = document.createElement("div");
 card.onclick = () => openModal(u);
 
 let result = simulateAssignment(u.name);
-let cache = probabilityCache[u.name];
 let cutoff = cache && cache.cutoff;
 
 if(typeof cutoff !== "number"){
@@ -224,10 +218,9 @@ if(typeof cutoff !== "number"){
   cutoff = cutoff.toFixed(2);
 }
 
-let color;
-if(prob >= 80) color = "green";
-else if(prob >= 50) color = "orange";
-else color = "red";
+let result = simulateAssignment(u.name);
+
+let color = result ? "green" : "red";
   
 card.style = `
 width:220px;
@@ -259,7 +252,7 @@ function simulateAssignment(targetUniversity){
 
   let students = [];
 
-  statusData.forEach(u=>{
+  universityData.forEach(u=>{
     let scores = (u.score_distribution || "")
       .split(",")
       .map(Number)
@@ -286,7 +279,7 @@ function simulateAssignment(targetUniversity){
   students.sort((a,b)=>b.score-a.score);
 
   let seatsMap = {};
-  statusData.forEach(u=>{
+  universityData.forEach(u=>{
     seatsMap[u.name] = Number(u.seats) || 1;
   });
 
