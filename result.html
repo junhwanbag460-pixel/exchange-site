@@ -13,6 +13,16 @@
 
 <h3 id="expectedResult" style="color:blue"></h3>
 
+<h3>📊 내 합격 확률 분석</h3>
+
+<div id="probabilityCards" style="
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+justify-content:center;
+margin-top:20px;
+"></div>
+
 <a href="status.html">전체 대학 지원 현황 보기</a>
 
 <table border="1" style="margin:auto;">
@@ -128,6 +138,7 @@ document.getElementById("expectedResult").innerHTML =
 }
 
 loadRecommendedUniversities();
+loadProbabilityCards();
   
 document.querySelectorAll(".uni").forEach(el=>{
 el.addEventListener("click",function(){
@@ -429,6 +440,101 @@ table.appendChild(row);
 loadTopUniversities();
 setInterval(loadTopUniversities,10000);
 
+function loadProbabilityCards(){
+
+fetch(API_URL+"?action=status")
+.then(res=>res.json())
+.then(data=>{
+
+let container = document.getElementById("probabilityCards");
+container.innerHTML = "";
+
+data.forEach(u=>{
+
+let cutoff = parseFloat(u.cutoff);
+
+// 컷라인 없으면 중립 처리
+if(isNaN(cutoff)){
+  cutoff = myScore;
+}
+
+// ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
+let prob = calculateProbability(cutoff, u.applicants, u.seats);
+
+// 상태 판단
+let status = "";
+let color = "";
+
+if(prob >= 80){
+  status = "🟢 안전";
+  color = "#e6f4ea";
+}
+else if(prob >= 50){
+  status = "🟡 적정";
+  color = "#fff8e1";
+}
+else{
+  status = "🔴 상향";
+  color = "#fdecea";
+}
+
+// 카드 생성
+let card = document.createElement("div");
+
+card.style = `
+width:220px;
+padding:15px;
+border-radius:12px;
+background:${color};
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+`;
+
+card.innerHTML = `
+<h4>${u.name}</h4>
+<p>합격 확률: <b>${prob}%</b></p>
+<p>${status}</p>
+<p style="font-size:12px;color:gray">
+컷라인: ${cutoff.toFixed(2)} / 내 점수: ${myScore.toFixed(2)}
+</p>
+`;
+
+container.appendChild(card);
+
+});
+
+});
+}
+
+function calculateProbability(cutoff, applicants, seats){
+
+if(applicants === 0 || seats === 0) return 0;
+
+// 지원자 적으면 거의 합격
+if(applicants <= seats){
+  return 98;
+}
+
+// 점수 차이
+let diff = myScore - cutoff;
+
+// 로지스틱 함수
+let k = 0.8;
+let prob = 1 / (1 + Math.exp(-k * diff));
+
+// 경쟁률 반영
+let rate = applicants / seats;
+prob = prob * (1 - (rate - 1) * 0.08);
+
+// 퍼센트 변환
+prob = prob * 100;
+
+// 범위 제한
+if(prob > 95) prob = 95;
+if(prob < 10) prob = 10;
+
+return Math.round(prob);
+}
+  
 </script>
 
 <body style="
