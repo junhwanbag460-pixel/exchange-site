@@ -14,6 +14,14 @@ body {
 }
 
 .card {
+  text-align: center;
+}
+
+#probabilityCards div {
+  text-align: center;
+}  
+
+.card {
   background: white;
   border-radius: 16px;
   padding: 20px;
@@ -40,6 +48,31 @@ body {
 <body>
 
 <h2>내 지원 결과</h2>
+
+<input id="searchBox" placeholder="국가 또는 대학 검색" style="
+display:block;
+margin:20px auto;
+padding:10px;
+width:300px;
+border-radius:8px;
+border:1px solid #ccc;
+">
+
+<div id="searchResults" style="
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+justify-content:center;
+margin-top:20px;
+"></div>
+
+<div id="emptyMessage" style="
+text-align:center;
+color:#666;
+margin-top:20px;
+">
+🔍 검색하면 대학이 표시됩니다
+</div>  
 
 <h3 id="expectedResult" style="color:blue"></h3>
 
@@ -478,7 +511,7 @@ candidates.slice(0,5).forEach(u=>{
   let cutoff=parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbabilityAdvanced(u.name);
+  let prob = calculateUnifiedProbability(u);
 
   let trend = "";
 
@@ -550,6 +583,10 @@ let data = statusData;
 let container = document.getElementById("probabilityCards");
 container.innerHTML = "";
 
+// 🔥 검색 중이면 다른 UI 숨기기
+document.getElementById("probabilityCards").style.display = keyword ? "none" : "flex";
+document.getElementById("recommendTable").style.display = keyword ? "none" : "";  
+
 data.forEach(u=>{
 
 let cutoff = parseFloat(u.cutoff);
@@ -561,7 +598,7 @@ if(isNaN(cutoff)){
 let range = calculatePredictedRange(u);  
 
 // ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
-let prob = calculateProbabilityAdvanced(u.name);
+let prob = calculateUnifiedProbability(u);
 
   let trend = "";
 
@@ -601,6 +638,7 @@ padding:18px;
 border-radius:16px;
 background:white;
 box-shadow:0 6px 18px rgba(0,0,0,0.08);
+text-align:center;
 `;
 
 card.innerHTML = `
@@ -633,47 +671,29 @@ container.appendChild(card);
 });
 }
 
-function calculateProbabilityAdvanced(universityName){
+function calculateUnifiedProbability(u){
 
-  // 🔥 캐시 있으면 바로 반환
-  if(probabilityCache[universityName] !== undefined){
-  return probabilityCache[universityName];
-}
+  let cutoff = parseFloat(u.cutoff);
+  if(isNaN(cutoff)) cutoff = myScore;
 
-  let iterations = 200;
-  let success = 0;
+  let applicants = Number(u.applicants) || 1;
+  let seats = Number(u.seats) || 1;
 
-  for(let i=0;i<iterations;i++){
+  if(applicants <= seats) return 95;
 
-    let simulated = statusData.map(u=>{
-      let noise = (Math.random() - 0.5) * 0.5;
+  let diff = myScore - cutoff;
 
-      return {
-        ...u,
-        cutoffSim: (parseFloat(u.cutoff) || myScore) + noise
-      };
-    });
+  let prob = 1 / (1 + Math.exp(-0.8 * diff));
 
-    let target = simulated.find(u=>u.name === universityName);
+  let rate = applicants / seats;
+  prob *= (1 - (rate - 1) * 0.08);
 
-    if(!target) continue;
-
-    let range = calculatePredictedRange(target);
-
-if(myScore >= range.min){
-      success++;
-    }
-  }
-
-  let prob = Math.round((success / iterations) * 100);
+  prob = prob * 100;
 
   if(prob > 95) prob = 95;
   if(prob < 5) prob = 5;
 
-  // 🔥 캐시에 저장
-  probabilityCache[universityName] = prob;
-
-  return prob;
+  return Math.round(prob);
 }
 
 function generateAutoCombination(universities){
@@ -686,7 +706,7 @@ function generateAutoCombination(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbabilityAdvanced(u.name);
+    let prob = calculateUnifiedProbability(u);
 
     if(prob >= 70) safe.push(u);
     else if(prob >= 40) match.push(u);
@@ -741,7 +761,7 @@ function generateStrategy(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateProbabilityAdvanced(u.name);
+    let prob = calculateUnifiedProbability(u);
 
     if(prob >= 70){
       result.safe.push(u.name);
@@ -788,7 +808,7 @@ let enriched = universities.map(u=>{
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateProbabilityAdvanced(u.name);
+  let prob = calculateUnifiedProbability(u);
 
   let diff = myScore - cutoff;
 
@@ -877,6 +897,7 @@ function loadStatusData(callback){
   probabilityCache = {}; // 🔥 반드시 추가
 
   callback();
+renderSearchResults(); // 🔥 이거 추가
 })
   .catch(()=>{
     console.error("status 불러오기 실패");
@@ -908,7 +929,7 @@ function simulateBestOrder(universities){
     let failProb = 1;
 
     order.forEach(u=>{
-      let p = calculateProbabilityAdvanced(u.name) / 100;
+      let p = calculateUnifiedProbability(u) / 100;
       failProb *= (1 - p);
     });
 
@@ -967,7 +988,7 @@ statusData.forEach(u=>{
   for(let i=0;i<count;i++){
 
     let base = (parseFloat(u.cutoff) || myScore);
-    let score = base + (Math.random() - 0.5) * 1.5;
+    let score = base + (Math.random() - 0.5) * 0.8;
 
     let typeRand = Math.random();
     let strategy = typeRand < 0.3 ? "safe" : typeRand < 0.6 ? "balanced" : "challenge";
@@ -1084,6 +1105,74 @@ function calculatePredictedRange(university){
     min: Number(min.toFixed(2)),
     max: Number(max.toFixed(2))
   };
+}  
+
+document.getElementById("searchBox").addEventListener("keyup", function(){
+  renderSearchResults();
+});
+
+function renderSearchResults(){
+
+  let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
+
+  let container = document.getElementById("searchResults");
+  let message = document.getElementById("emptyMessage");
+
+  container.innerHTML = "";
+
+  // 🔥 아무것도 안 쳤으면 아무것도 안 보여줌
+  if(keyword === ""){
+    message.style.display = "block";
+    return;
+  }
+
+  message.style.display = "none";
+
+  let filtered = statusData.filter(u =>
+    u.name.toLowerCase().includes(keyword) ||
+    u.country.toLowerCase().includes(keyword)
+  );
+
+  // 🔥 결과 없으면 안내
+  if(filtered.length === 0){
+    container.innerHTML = "<div style='color:#999'>검색 결과 없음</div>";
+    return;
+  }
+
+  filtered.forEach(u=>{
+
+    let prob = calculateUnifiedProbability(u);
+
+    let card = document.createElement("div");
+
+card.onclick = () => {
+  showApplicants(u.name);
+  document.getElementById("applicants").scrollIntoView({ behavior: "smooth" });
+};
+
+    card.style = `
+    width:220px;
+    padding:16px;
+    border-radius:12px;
+    background:white;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    text-align:center;
+    `;
+
+    card.innerHTML = `
+    <div style="font-weight:700">${u.name}</div>
+    <div style="color:#666">${u.country}</div>
+    <div style="font-size:20px;color:#3182f6;margin:8px 0">
+      ${prob}%
+    </div>
+    <div style="font-size:12px;color:#888">
+      경쟁률 ${u.rate}
+    </div>
+    `;
+
+    container.appendChild(card);
+
+  });
 }  
   
 </script>
