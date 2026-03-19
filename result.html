@@ -682,67 +682,44 @@ function calculateProbability(u){
 
   if(probabilityCache[u.name]) return probabilityCache[u.name];
 
-  let seats = Number(u.seats) || 1;
-
-  // 🔥 score_distribution 사용
   let scores = (u.score_distribution || "")
     .split(",")
     .map(Number)
     .filter(x => !isNaN(x));
 
   if(scores.length === 0){
-  probabilityCache[u.name] = 50;
-  return 50;
-}
+    probabilityCache[u.name] = 50;
+    return 50;
+  }
 
-  // 🔥 정렬 (필수)
-  // 🔥 정렬
-scores.sort((a,b)=>b-a);
+  scores.sort((a,b)=>b-a);
 
-// ======================
-// 🔥🔥 여기부터 추가 🔥🔥
-// ======================
+  let seats = Number(u.seats) || 1;
 
-// 미래 유입 보정
-let applicants = Number(u.applicants) || scores.length;
-let futureAdd = Math.floor(applicants * 0.3);
-
-for(let i=0;i<futureAdd;i++){
-  let base = scores[Math.floor(Math.random() * scores.length)] || myScore;
-
-  let newScore = base + (Math.random() * 0.3 - 0.1);
-  scores.push(newScore);
-}
-
-// 다시 정렬
-scores.sort((a,b)=>b-a);
-
-// ======================
-// 🔥🔥 여기까지 🔥🔥
-// ======================
-
-// 🔥 순위 계산 (이건 기존 그대로)
-let rank = scores.filter(s => s > myScore).length + 1;
-
-  let prob;
+  // 🔥 내 예상 순위
+  let rank = scores.filter(s => s > myScore).length + 1;
 
   let diff = rank - seats;
 
-if(diff <= 0){
-  prob = 85 + Math.random()*10;
-}
-else if(diff <= seats * 0.5){
-  prob = 60 - diff * 5;
-}
-else{
-  prob = 30 - diff * 2;
-}
+  let prob;
 
-  prob = Math.max(5, Math.min(95, prob));
-  prob = Math.round(prob);
+  if(diff <= 0){
+    prob = 95;        // 합격권
+  }
+  else if(diff <= 2){
+    prob = 75;        // 경계권
+  }
+  else if(diff <= 5){
+    prob = 55;        // 도전 가능
+  }
+  else if(diff <= 10){
+    prob = 30;
+  }
+  else{
+    prob = 10;
+  }
 
   probabilityCache[u.name] = prob;
-
   return prob;
 }
   
