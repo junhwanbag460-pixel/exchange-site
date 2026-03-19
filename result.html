@@ -511,7 +511,7 @@ candidates.slice(0,5).forEach(u=>{
   let cutoff=parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateUnifiedProbability(u);
+  let prob = calculateProbability(u);
 
   let trend = "";
 
@@ -578,6 +578,8 @@ setInterval(()=>{
 
 function loadProbabilityCards(){
 
+let keyword = document.getElementById("searchBox")?.value?.trim() || "";  
+
 let data = statusData;
 
 let container = document.getElementById("probabilityCards");
@@ -598,7 +600,7 @@ if(isNaN(cutoff)){
 let range = calculatePredictedRange(u);  
 
 // ⭐ 확률 계산 (이미 status.html에 있음 → 여기 복붙 필요)
-let prob = calculateUnifiedProbability(u);
+let prob = calculateProbability(u);
 
   let trend = "";
 
@@ -671,7 +673,7 @@ container.appendChild(card);
 });
 }
 
-function calculateUnifiedProbability(u){
+function calculateProbability(u){
 
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
@@ -679,23 +681,21 @@ function calculateUnifiedProbability(u){
   let applicants = Number(u.applicants) || 1;
   let seats = Number(u.seats) || 1;
 
-  if(applicants <= seats) return 95;
-
   let diff = myScore - cutoff;
 
-  let prob = 1 / (1 + Math.exp(-0.8 * diff));
+  let prob = 1 / (1 + Math.exp(-0.7 * diff));
 
   let rate = applicants / seats;
-  prob *= (1 - (rate - 1) * 0.08);
+  prob *= Math.exp(-0.15 * (rate - 1));
 
   prob = prob * 100;
 
-  if(prob > 95) prob = 95;
-  if(prob < 5) prob = 5;
+  if(prob > 90) prob = 90;
+  if(prob < 10) prob = 10;
 
   return Math.round(prob);
 }
-
+  
 function generateAutoCombination(universities){
 
   let safe = [];
@@ -706,7 +706,7 @@ function generateAutoCombination(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateUnifiedProbability(u);
+    let prob = calculateProbability(u);
 
     if(prob >= 70) safe.push(u);
     else if(prob >= 40) match.push(u);
@@ -761,7 +761,7 @@ function generateStrategy(universities){
     let cutoff = parseFloat(u.cutoff);
     if(isNaN(cutoff)) cutoff = myScore;
 
-    let prob = calculateUnifiedProbability(u);
+    let prob = calculateProbability(u);
 
     if(prob >= 70){
       result.safe.push(u.name);
@@ -808,7 +808,7 @@ let enriched = universities.map(u=>{
   let cutoff = parseFloat(u.cutoff);
   if(isNaN(cutoff)) cutoff = myScore;
 
-  let prob = calculateUnifiedProbability(u);
+  let prob = calculateProbability(u);
 
   let diff = myScore - cutoff;
 
