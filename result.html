@@ -461,12 +461,7 @@ let candidates = data
 // diff 계산
 candidates.forEach(u=>{
   let result = simulateAssignment(u.name);
-
-  u.diff = 0; // 임시 (정렬 유지용)
-});
-
-  u.range = calculatePredictedRange(u); // 🔥 여기에 저장
-  u.diff = Math.abs(myScore - cutoff);
+  u.diff = 0; // 정렬용 (단순 유지)
 });
 
 // 정렬
