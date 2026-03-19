@@ -101,8 +101,8 @@ renderCards();
 function calculateProbability(u){
 
   if(probabilityCache[u.name] !== undefined){
-  return probabilityCache[u.name].prob || probabilityCache[u.name];
-}
+    return probabilityCache[u.name].prob;
+  }
 
   let baseScores = (u.score_distribution || "")
     .split(",")
@@ -112,6 +112,7 @@ function calculateProbability(u){
   let applicants = Number(u.applicants) || 0;
   let seats = Number(u.seats) || 1;
 
+  // 🔥 데이터 없으면 중립
   if(baseScores.length === 0){
     probabilityCache[u.name] = {
       prob: 50,
@@ -120,7 +121,10 @@ function calculateProbability(u){
     return 50;
   }
 
-  let trials = 200;
+  // 🔥 핵심: 최소 표본 확보 (입시 안정성)
+  let effectiveApplicants = Math.max(applicants, seats * 5);
+
+  let trials = 300; // 정확도 ↑
   let passCount = 0;
   let cutoffSum = 0;
 
@@ -128,19 +132,23 @@ function calculateProbability(u){
 
     let simulated = [];
 
-    for(let i = 0; i < applicants; i++){
+    // 🔥 지원자 생성 (분포 기반)
+    for(let i = 0; i < effectiveApplicants; i++){
       let rand = baseScores[Math.floor(Math.random() * baseScores.length)];
       simulated.push(rand);
     }
 
+    // 🔥 내 점수 포함
     simulated.push(myScore);
 
     simulated.sort((a,b)=>b-a);
 
-    let cutoff = simulated[seats - 1] || simulated[simulated.length - 1];
+    // 🔥 컷라인
+    let cutoff = simulated[seats - 1];
     cutoffSum += cutoff;
 
-    let rank = simulated.indexOf(myScore) + 1;
+    // 🔥 순위 (정확한 방식)
+    let rank = simulated.filter(s => s > myScore).length + 1;
 
     if(rank <= seats){
       passCount++;
@@ -150,6 +158,14 @@ function calculateProbability(u){
   let prob = Math.round((passCount / trials) * 100);
   let avgCutoff = cutoffSum / trials;
 
+  // 🔥 현실 보정 (입시 느낌)
+  let diff = myScore - avgCutoff;
+
+  if(diff > 2) prob = Math.max(prob, 85);
+  else if(diff > 1) prob = Math.max(prob, 70);
+  else if(diff > 0) prob = Math.max(prob, 55);
+
+  // 🔥 하한/상한
   if(prob < 5) prob = 5;
   if(prob > 95) prob = 95;
 
