@@ -476,7 +476,7 @@ candidates.sort((a,b)=>a.diff-b.diff);
   
 // 출력
 candidates.slice(0,5).forEach(u=>{
-let cutoff = probabilityCache[u.name + "_cutoff"];
+let cutoff = probabilityCache[u.name]?.cutoff;
 
 if(!cutoff) cutoff = myScore;
   if(isNaN(cutoff)) cutoff = myScore;
@@ -603,15 +603,10 @@ function calculateProbability(u){
     return probabilityCache[u.name].prob;
   }
 
-  let baseScores = (u.score_distribution || "")
-    .split(",")
-    .map(Number)
-    .filter(x => !isNaN(x));
+  let cutoff = Number(u.cutoff);
 
-  let applicants = Number(u.applicants) || 0;
-  let seats = Number(u.seats) || 1;
-
-  if(baseScores.length === 0){
+  // 컷라인 없으면 중립
+  if(isNaN(cutoff)){
     probabilityCache[u.name] = {
       prob: 50,
       cutoff: myScore
@@ -619,51 +614,39 @@ function calculateProbability(u){
     return 50;
   }
 
-  let effectiveApplicants = Math.max(applicants, seats * 5);
+  let diff = myScore - cutoff;
 
-  let trials = 300;
-  let passCount = 0;
-  let cutoffSum = 0;
+  let prob;
 
-  for(let t = 0; t < trials; t++){
-
-    let simulated = [];
-
-    for(let i = 0; i < effectiveApplicants; i++){
-      let rand = baseScores[Math.floor(Math.random() * baseScores.length)];
-      simulated.push(rand);
-    }
-
-    simulated.push(myScore);
-
-    simulated.sort((a,b)=>b-a);
-
-    let cutoff = simulated[seats - 1];
-    cutoffSum += cutoff;
-
-    // 🔥 핵심 수정
-    let rank = simulated.filter(s => s > myScore).length + 1;
-
-    if(rank <= seats){
-      passCount++;
-    }
+  // 🔥 핵심: 순수 컷라인 모델
+  if(diff >= 2){
+    prob = 95;
   }
-
-  let prob = Math.round((passCount / trials) * 100);
-  let avgCutoff = cutoffSum / trials;
-
-  let diff = myScore - avgCutoff;
-
-  if(diff > 2) prob = Math.max(prob, 85);
-  else if(diff > 1) prob = Math.max(prob, 70);
-  else if(diff > 0) prob = Math.max(prob, 55);
-
-  if(prob < 5) prob = 5;
-  if(prob > 95) prob = 95;
+  else if(diff >= 1){
+    prob = 85;
+  }
+  else if(diff >= 0.5){
+    prob = 75;
+  }
+  else if(diff >= 0){
+    prob = 65;
+  }
+  else if(diff >= -0.5){
+    prob = 50;
+  }
+  else if(diff >= -1){
+    prob = 35;
+  }
+  else if(diff >= -2){
+    prob = 20;
+  }
+  else{
+    prob = 5;
+  }
 
   probabilityCache[u.name] = {
     prob: prob,
-    cutoff: Number(avgCutoff.toFixed(2))
+    cutoff: cutoff
   };
 
   return prob;
