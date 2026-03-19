@@ -38,6 +38,7 @@ const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZ
 let universityData=[];
 let currentSort="";
 
+let realStudents = []; // ⭐ 이거 추가
 let chart;
 
 let rawScore = localStorage.getItem("myScore");
@@ -59,6 +60,15 @@ renderCards();;
 document.getElementById("searchBox").addEventListener("keyup", function(){
   renderCards();
 });
+
+function loadStudents(){
+  fetch(API_URL + "?action=students")
+    .then(res => res.json())
+    .then(data => {
+      realStudents = data;
+      loadStatus(); // ⭐ 학생 불러온 후 상태 로드
+    });
+}  
 
 function sortTable(type){
 
@@ -98,7 +108,7 @@ renderCards();
 
 
   
-loadStatus();
+loadStudents();
 // setInterval(loadStatus,5000); ← 주석 처리
   
 </script>
@@ -220,23 +230,12 @@ function renderCards(){
 
 function simulateAssignment(targetUniversity){
 
-  let students = [];
-
-  universityData.forEach(u=>{
-    let scores = (u.score_distribution || "")
-      .split(",")
-      .map(Number)
-      .filter(x => !isNaN(x));
-
-    scores.forEach(score=>{
-      students.push({
-        score: score,
-        choices: [u.name],
-        currentChoice: 0,
-        assigned: null
-      });
-    });
-  });
+  let students = realStudents.map(s => ({
+    score: s.score,
+    choices: [...s.choices],
+    currentChoice: 0,
+    assigned: null
+  }));
 
   students.push({
     score: myScore,
@@ -301,7 +300,7 @@ function simulateAssignment(targetUniversity){
 
   let me = students.find(s=>s.me);
   return me.assigned === targetUniversity;
-}  
+}
 
 </script>
 
