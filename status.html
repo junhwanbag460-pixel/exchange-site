@@ -180,7 +180,15 @@ let card = document.createElement("div");
 
 card.onclick = () => openModal(u);
 
-let result = simulateAssignment(u.name);
+let resultCache = {};
+
+filtered.forEach(u=>{
+
+  if(resultCache[u.name] === undefined){
+    resultCache[u.name] = simulateAssignment(u.name);
+  }
+
+  let result = resultCache[u.name];
 
 let color = result ? "green" : "red";
 
