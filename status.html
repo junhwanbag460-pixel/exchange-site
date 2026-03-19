@@ -99,40 +99,35 @@ renderCards();
 function calculateProbability(u){
 
   let scores = (u.score_distribution || "")
-  .split(",")
-  .map(Number)
-  .filter(x => !isNaN(x));
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x));
 
-if(scores.length === 0){
-  return 50;
-}
+  if(scores.length === 0){
+    return 50;
+  }
 
-scores.sort((a,b)=>b-a);
+  scores.sort((a,b)=>b-a);
 
-let rank = scores.filter(s => s > myScore).length + 1;
+  let seats = Number(u.seats) || 1;
 
-let seats = Number(u.seats) || 1;
+  let rank = scores.filter(s => s > myScore).length + 1;
 
-let prob;
+  let cutoff = calculateDynamicCutoff(u);
 
-if(rank <= seats){
-  prob = 90;
-} else {
-  prob = 85 - (rank - seats) * 10;
-}
+  let diff = myScore - cutoff;
 
-prob = Math.max(5, Math.min(95, prob));
-return Math.round(prob);
+  let prob = 100 / (1 + Math.exp(-diff * 0.7));
 
-  let rate = applicants / seats;
-  prob *= Math.exp(-0.15 * (rate - 1));
+  let percentile = rank / scores.length;
+  prob += (0.5 - percentile) * 20;
 
-  prob = prob * 100;
+  prob = Math.round(prob);
 
-  if(prob > 90) prob = 90;
-  if(prob < 10) prob = 10;
+  if(prob < 5) prob = 5;
+  if(prob > 95) prob = 95;
 
-  return Math.round(prob);
+  return prob;
 }
   
 loadStatus();
@@ -225,8 +220,9 @@ container.innerHTML = "";
 
 let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
 
-let filtered = [...universityData]; // 🔥 복사
+let filtered = [...universityData];
 
+// 🔥 검색어 없으면 전체 보여주기
 if(keyword !== ""){
   filtered = filtered.filter(u =>
     u.name.toLowerCase().includes(keyword) ||
@@ -234,16 +230,11 @@ if(keyword !== ""){
   );
 }
 
-if(keyword === ""){
-  container.innerHTML = "<div style='color:#666'>🔍 검색하면 대학이 표시됩니다</div>";
-  return;
-}  
-
+// 🔥 데이터 없을 때만 메시지
 if(filtered.length === 0){
   container.innerHTML = "<div style='color:#999'>검색 결과 없음</div>";
   return;
 }
-
 filtered.forEach(u=>{
 
 let card = document.createElement("div");
