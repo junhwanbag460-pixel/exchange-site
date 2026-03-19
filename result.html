@@ -176,7 +176,6 @@ margin-top:20px;
 <tr>
 <th>대학</th>
 <th>국가</th>
-<th>컷라인</th>
 <th>내 점수</th>
 <th>판단</th>
 </tr>
@@ -525,14 +524,26 @@ else{
   trend = "➡️ 유지";
 }
 
+let scores = (u.score_distribution || "")
+  .split(",")
+  .map(Number)
+  .filter(x => !isNaN(x));
+
+scores.sort((a,b)=>b-a);
+
+let rank = scores.filter(s => s > myScore).length + 1;
+let seats = Number(u.seats) || 1;
+
+let diff = rank - seats;
+
 let status="";
 let color="black";
 
-if(myScore >= u.range.max){
+if(diff <= -2){
   status="🟢 안정";
   color="green";
 }
-else if(myScore >= u.range.min){
+else if(diff <= 1){
   status="🟡 가능";
   color="orange";
 }
@@ -690,19 +701,50 @@ function calculateProbability(u){
   }
 
   // 🔥 정렬 (필수)
-  scores.sort((a,b)=>b-a);
+  // 🔥 정렬
+scores.sort((a,b)=>b-a);
+
+// ======================
+// 🔥🔥 여기부터 추가 🔥🔥
+// ======================
+
+// 미래 유입 보정
+let applicants = Number(u.applicants) || scores.length;
+let futureAdd = Math.floor(applicants * 0.3);
+
+for(let i=0;i<futureAdd;i++){
+  let base = scores[Math.floor(Math.random() * scores.length)] || myScore;
+
+  let newScore = base + (Math.random() * 0.3 - 0.1);
+  scores.push(newScore);
+}
+
+// 다시 정렬
+scores.sort((a,b)=>b-a);
+
+// ======================
+// 🔥🔥 여기까지 🔥🔥
+// ======================
+
+// 🔥 순위 계산 (이건 기존 그대로)
+let rank = scores.filter(s => s > myScore).length + 1;
 
   // 🔥 내 순위 계산
   let rank = scores.filter(s => s > myScore).length + 1;
 
   let prob;
 
-  if(rank <= seats){
-    prob = 90;
-  } else {
-    let diff = rank - seats;
-    prob = 85 - diff * 10;
-  }
+  let diff = rank - seats;
+
+if(diff <= 0){
+  prob = 85 + Math.random()*10;
+}
+else if(diff <= seats * 0.5){
+  prob = 60 - diff * 5;
+}
+else{
+  prob = 30 - diff * 2;
+}
 
   prob = Math.max(5, Math.min(95, prob));
   prob = Math.round(prob);
