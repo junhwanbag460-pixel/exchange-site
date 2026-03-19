@@ -101,6 +101,30 @@ margin-top:20px;
   <div class="title">🤖 자동 지원 조합</div>
   <div id="autoStrategyBox" class="sub"></div>
 </div>  
+
+<div class="card">
+  <div class="title">⚙️ 전략 설정</div>
+  
+  <label>
+    <input type="radio" name="strategyType" value="safe" checked>
+    안정형
+  </label><br>
+
+  <label>
+    <input type="radio" name="strategyType" value="balanced">
+    균형형
+  </label><br>
+
+  <label>
+    <input type="radio" name="strategyType" value="challenge">
+    도전형
+  </label>
+</div>
+  
+<div class="card">
+  <div class="title">🧠 최적 합격 전략</div>
+  <div id="optimalStrategyBox" class="sub"></div>
+</div>  
   
 <h3>📊 내 점수 기준 추천 대학</h3>
 
@@ -446,6 +470,7 @@ data.sort((a,b)=>a.diff-b.diff);
 
 generateStrategy(data.slice(0,10));
 generateAutoCombination(data.slice(0,10)); 
+generateOptimalCombination(data.slice(0,10));  
 data.slice(0,5).forEach(u=>{
 let cutoff=parseFloat(u.cutoff);
 
@@ -675,7 +700,107 @@ function generateStrategy(universities){
   text += "<br><b>👉 전략: 안정 1~2 + 적정 2 + 상향 1 추천</b>";
 
   document.getElementById("strategyBox").innerHTML = text;
+}
+
+function generateOptimalCombination(universities){
+
+let strategyType = document.querySelector('input[name="strategyType"]:checked')?.value || "safe";  
+
+universities = universities.filter(u => u.name !== assignedUniversity);  
+
+if(universities.length < 5){
+  document.getElementById("optimalStrategyBox").innerHTML =
+    "⚠️ 추천 가능한 대학이 부족합니다 (최소 5개 필요)";
+  return;
 }  
+
+  // 확률 계산 포함
+let enriched = universities.map(u=>{
+  let cutoff = parseFloat(u.cutoff);
+  if(isNaN(cutoff)) cutoff = myScore;
+
+  let prob = calculateProbability(cutoff, u.applicants, u.seats);
+
+  let diff = myScore - cutoff;
+
+  // 🔥 전략 반영
+  if(strategyType === "challenge"){
+    prob += diff * -3;
+  }
+  else if(strategyType === "balanced"){
+    prob += diff * -1;
+  }
+
+  // 범위 제한
+  if(prob > 95) prob = 95;
+  if(prob < 5) prob = 5;
+
+  return {
+  name: u.name,
+  prob: prob / 100,
+  country: u.country || "unknown"
+};
+});
+
+  let bestCombo = [];
+  let bestProb = 0;
+
+  // 5개 조합 brute force (간단 버전)
+  for(let i=0;i<enriched.length;i++){
+    for(let j=i+1;j<enriched.length;j++){
+      for(let k=j+1;k<enriched.length;k++){
+        for(let l=k+1;l<enriched.length;l++){
+          for(let m=l+1;m<enriched.length;m++){
+
+            let combo = [enriched[i], enriched[j], enriched[k], enriched[l], enriched[m]];
+            let countries = new Set(
+            combo.map(c=>c.country).filter(c=>c !== "unknown")
+            );
+
+            if(countries.size < combo.filter(c=>c.country !== "unknown").length) continue;
+
+            let failProb = 1;
+            combo.forEach(c=>{
+              failProb *= (1 - c.prob);
+            });
+
+            let successProb = 1 - failProb;
+
+            if(successProb > bestProb){
+              bestProb = successProb;
+              bestCombo = combo;
+            }
+
+          }
+        }
+      }
+    }
+  }
+
+  // 출력
+  let html = `<b>총 합격 확률: ${(bestProb*100).toFixed(1)}%</b><br><br>`;
+  if(bestCombo.length === 0){
+  document.getElementById("optimalStrategyBox").innerHTML =
+    "⚠️ 조건을 만족하는 조합이 없습니다 (국가 제한 등)";
+  return;
+}
+
+  bestCombo.forEach((c,i)=>{
+    html += `${i+1}지망: ${c.name}<br>`;
+  });
+
+  document.getElementById("optimalStrategyBox").innerHTML = html;
+}  
+
+document.querySelectorAll('input[name="strategyType"]').forEach(el=>{
+  el.addEventListener("change", ()=>{
+    loadRecommendedUniversities();
+
+    // 🔥 추가
+    document.getElementById("optimalStrategyBox")
+      .scrollIntoView({ behavior: "smooth" });
+  });
+});
   
 </script>
 </body>
