@@ -181,19 +181,10 @@ let card = document.createElement("div");
 card.onclick = () => openModal(u);
 
 let result = simulateAssignment(u.name);
-let cutoff = cache && cache.cutoff;
-
-if(typeof cutoff !== "number"){
-  cutoff = "-";
-} else {
-  cutoff = cutoff.toFixed(2);
-}
-
-let result = simulateAssignment(u.name);
 
 let color = result ? "green" : "red";
 
-let cutoff = "-"; // 그냥 표시용
+let cutoff = "-"; // 표시용
   
 card.style = `
 width:220px;
