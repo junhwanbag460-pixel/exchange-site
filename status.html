@@ -173,7 +173,7 @@ function openModal(u){
 document.getElementById("modal").style.display="block";
 
 // 컷라인 정리
-let cutoff = parseFloat(u.cutoff);
+let cutoff = calculateDynamicCutoff(u);
 
 if(isNaN(cutoff)){
   cutoff = myScore;  // ⭐ 핵심 (중립값)
@@ -250,7 +250,7 @@ let card = document.createElement("div");
 
 card.onclick = () => openModal(u);
 
-let cutoff = parseFloat(u.cutoff);
+let cutoff = calculateDynamicCutoff(u);
 if(isNaN(cutoff)) cutoff = "-";
 else cutoff = cutoff.toFixed(2);
 
@@ -285,6 +285,40 @@ card.innerHTML = `
 container.appendChild(card);
 
 });
+}
+
+function calculateDynamicCutoff(u){
+  let base = parseFloat(u.cutoff);
+  if(isNaN(base)) base = myScore;
+
+  let applicants = Number(u.applicants) || 1;
+  let seats = Number(u.seats) || 1;
+
+  let scores = (u.score_distribution || "")
+    .split(",")
+    .map(Number)
+    .filter(x => !isNaN(x))
+    .sort((a,b)=>b-a);
+
+  if(scores.length === 0) return base;
+
+  let competition = applicants / seats;
+  let pressure_comp = Math.log(competition + 1);
+
+  let topN = scores.slice(0, seats * 2);
+  let leaveCount = topN.filter(s => s > base + 1).length;
+  let pressure_top = - (leaveCount / topN.length || 0);
+
+  let mid = scores.slice(seats, seats * 3);
+  let pressure_mid = mid.length / scores.length;
+
+  let predicted =
+    base +
+    pressure_comp * 0.8 +
+    pressure_mid * 0.5 +
+    pressure_top * 1.2;
+
+  return Number(predicted.toFixed(2));
 }
   
 </script>
