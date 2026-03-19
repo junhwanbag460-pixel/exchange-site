@@ -597,46 +597,50 @@ function calculateProbability(u){
 
   if(probabilityCache[u.name] !== undefined) return probabilityCache[u.name];
 
-  let scores = (u.score_distribution || "")
+  let baseScores = (u.score_distribution || "")
     .split(",")
     .map(Number)
     .filter(x => !isNaN(x));
 
-  if(scores.length === 0){
+  let applicants = Number(u.applicants) || 0;
+  let seats = Number(u.seats) || 1;
+
+  if(baseScores.length === 0){
     probabilityCache[u.name] = 50;
     return 50;
   }
 
-  scores.sort((a,b)=>b-a);
+  let trials = 200; // 정확도 vs 속도 (200~500 추천)
+  let passCount = 0;
 
-  let seats = Number(u.seats) || 1;
+  for(let t = 0; t < trials; t++){
 
-  // 🔥 내 순위
-  let rank = scores.filter(s => s > myScore).length + 1;
+    // 🔥 1. 랜덤 지원자 생성 (기존 분포 기반)
+    let simulated = [];
 
-  // 🔥 컷라인
-  let cutoff = calculateDynamicCutoff(u);
-  if(isNaN(cutoff)) cutoff = myScore;
+    for(let i = 0; i < applicants; i++){
+      let rand = baseScores[Math.floor(Math.random() * baseScores.length)];
+      simulated.push(rand);
+    }
 
-  let diff = myScore - cutoff;
+    // 🔥 2. 내 점수 포함
+    simulated.push(myScore);
 
-  // 🔥 점수 영향 (강하게)
-  let scoreFactor = 1 / (1 + Math.exp(-diff * 2.5));
+    // 🔥 3. 정렬
+    simulated.sort((a,b)=>b-a);
 
-  // 🔥 순위 영향 (핵심)
-  let rankFactor = 1 - (rank - 1) / scores.length;
+    // 🔥 4. 내 순위
+    let rank = simulated.indexOf(myScore) + 1;
 
-  // 🔥 정원 영향
-  let seatFactor = seats / scores.length;
+    // 🔥 5. 합격 여부
+    if(rank <= seats){
+      passCount++;
+    }
+  }
 
-  // 🔥 최종 결합
-  let prob =
-    scoreFactor * 0.5 +
-    rankFactor * 0.3 +
-    seatFactor * 0.2;
+  let prob = Math.round((passCount / trials) * 100);
 
-  prob = Math.round(prob * 100);
-
+  // 안정화 (너 UX 유지하려면)
   if(prob < 5) prob = 5;
   if(prob > 95) prob = 95;
 
