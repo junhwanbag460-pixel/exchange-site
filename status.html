@@ -133,50 +133,21 @@ border-radius:10px;
   
 function openModal(u){
 
-document.getElementById("modal").style.display="block";
+  document.getElementById("modal").style.display="block";
 
-// 컷라인 정리
-let result = simulateAssignment(u.name);
+  let result = simulateAssignment(u.name);
 
-if(!cutoff) cutoff = myScore;
+  let status = result ? "🟢 합격" : "🔴 탈락";
+  let color = result ? "green" : "red";
 
-if(isNaN(cutoff)){
-  cutoff = myScore;  // ⭐ 핵심 (중립값)
-}
-
-if(typeof cutoff === "number"){
-  cutoff = Number(cutoff.toFixed(2));
-} else {
-  cutoff = myScore;
-}
-
-// 상태 판단
-let result = simulateAssignment(u.name);
-
-let status = "";
-let color = "black";
-
-if(result){
-  status = "🟢 합격";
-  color = "green";
-}else{
-  status = "🔴 탈락";
-  color = "red";
-}
-
-// 모달 내용 출력
-document.getElementById("modalTitle").innerHTML =
-u.name + " (" + u.country + ")" +
-"<br>합격 확률: <span style='color:"+color+"'>" + prob + "%</span>" +
-"<br>상태: " + status +
-"<br>내 점수: " + myScore +
-"<br>컷라인: " + cutoff +
-"<br>지원자: " + u.applicants +
-"<br>정원: " + u.seats +
-"<br><small style='color:gray'>* 이 확률은 참고용이며 실제 결과와 다를 수 있습니다</small>";
+  document.getElementById("modalTitle").innerHTML =
+  u.name + " (" + u.country + ")" +
+  "<br>결과: <span style='color:"+color+"'>" + (result ? "합격" : "탈락") + "</span>" +
+  "<br>내 점수: " + myScore +
+  "<br>지원자: " + u.applicants +
+  "<br>정원: " + u.seats;
 
 }
-
 function closeModal(){
 document.getElementById("modal").style.display="none";
 }
@@ -221,6 +192,8 @@ if(typeof cutoff !== "number"){
 let result = simulateAssignment(u.name);
 
 let color = result ? "green" : "red";
+
+let cutoff = "-"; // 그냥 표시용
   
 card.style = `
 width:220px;
