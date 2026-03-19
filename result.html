@@ -193,7 +193,7 @@ let statusData = [];
 
 let myScore = 0;
 let assignedUniversity = "";
-let probabilityCache = {};  
+robabilityCache = {};  
   
 let userEmail=localStorage.getItem("userEmail");
 
@@ -929,7 +929,7 @@ function simulateBestOrder(universities){
     let failProb = 1;
 
     order.forEach(u=>{
-      let p = calculateUnifiedProbability(u) / 100;
+      let p = calculateProbability(u) / 100;
       failProb *= (1 - p);
     });
 
@@ -1141,7 +1141,7 @@ function renderSearchResults(){
 
   filtered.forEach(u=>{
 
-    let prob = calculateUnifiedProbability(u);
+    let prob = calculateProbability(u);
 
     let card = document.createElement("div");
 
