@@ -462,7 +462,7 @@ let candidates = data
 // diff 계산
 candidates.forEach(u=>{
   let prob = calculateProbability(u);
-let cutoff = probabilityCache[u.name + "_cutoff"];
+let cutoff = probabilityCache[u.name].cutoff
 
 if(!cutoff) cutoff = myScore;
   if(isNaN(cutoff)) cutoff = myScore;
@@ -600,7 +600,7 @@ card.className = "card";   // 🔥 이거 추가
 function calculateProbability(u){
 
   if(probabilityCache[u.name] !== undefined){
-    return probabilityCache[u.name];
+    return probabilityCache[u.name].prob;
   }
 
   let baseScores = (u.score_distribution || "")
@@ -612,12 +612,16 @@ function calculateProbability(u){
   let seats = Number(u.seats) || 1;
 
   if(baseScores.length === 0){
-    probabilityCache[u.name] = 50;
-    probabilityCache[u.name + "_cutoff"] = myScore;
+    probabilityCache[u.name] = {
+      prob: 50,
+      cutoff: myScore
+    };
     return 50;
   }
 
-  let trials = 200;
+  let effectiveApplicants = Math.max(applicants, seats * 5);
+
+  let trials = 300;
   let passCount = 0;
   let cutoffSum = 0;
 
@@ -625,7 +629,7 @@ function calculateProbability(u){
 
     let simulated = [];
 
-    for(let i = 0; i < applicants; i++){
+    for(let i = 0; i < effectiveApplicants; i++){
       let rand = baseScores[Math.floor(Math.random() * baseScores.length)];
       simulated.push(rand);
     }
@@ -634,10 +638,11 @@ function calculateProbability(u){
 
     simulated.sort((a,b)=>b-a);
 
-    let cutoff = simulated[seats - 1] || simulated[simulated.length - 1];
+    let cutoff = simulated[seats - 1];
     cutoffSum += cutoff;
 
-    let rank = simulated.indexOf(myScore) + 1;
+    // 🔥 핵심 수정
+    let rank = simulated.filter(s => s > myScore).length + 1;
 
     if(rank <= seats){
       passCount++;
@@ -647,15 +652,23 @@ function calculateProbability(u){
   let prob = Math.round((passCount / trials) * 100);
   let avgCutoff = cutoffSum / trials;
 
+  let diff = myScore - avgCutoff;
+
+  if(diff > 2) prob = Math.max(prob, 85);
+  else if(diff > 1) prob = Math.max(prob, 70);
+  else if(diff > 0) prob = Math.max(prob, 55);
+
   if(prob < 5) prob = 5;
   if(prob > 95) prob = 95;
 
-  probabilityCache[u.name] = prob;
-  probabilityCache[u.name + "_cutoff"] = Number(avgCutoff.toFixed(2));
+  probabilityCache[u.name] = {
+    prob: prob,
+    cutoff: Number(avgCutoff.toFixed(2))
+  };
 
   return prob;
 }
-
+  
 function loadStatusData(callback){
   fetch(API_URL+"?action=status")
   .then(res=>res.json())
