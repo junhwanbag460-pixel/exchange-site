@@ -555,19 +555,13 @@ else{
   let row=document.createElement("tr");
 
   row.innerHTML=`
-  <td>${u.name}</td>
-  <td>${u.country}</td>
-  <td>
-${cutoff.toFixed(2)}<br>
-<span style="font-size:12px;color:#888">
-(${u.range.min} ~ ${u.range.max})
-</span>
+<td>${u.name}</td>
+<td>${u.country}</td>
+<td>${myScore.toFixed(2)}</td>
+<td style="color:${color};font-weight:bold">
+${status} (${prob}%)
 </td>
-  <td>${myScore.toFixed(2)}</td>
-  <td style="color:${color};font-weight:bold">
-  ${status} (${prob}%)
-  </td>
-  `;
+`;
 
   table.appendChild(row);
 });
@@ -697,8 +691,9 @@ function calculateProbability(u){
     .filter(x => !isNaN(x));
 
   if(scores.length === 0){
-    return 50;
-  }
+  probabilityCache[u.name] = 50;
+  return 50;
+}
 
   // 🔥 정렬 (필수)
   // 🔥 정렬
@@ -728,9 +723,6 @@ scores.sort((a,b)=>b-a);
 
 // 🔥 순위 계산 (이건 기존 그대로)
 let rank = scores.filter(s => s > myScore).length + 1;
-
-  // 🔥 내 순위 계산
-  let rank = scores.filter(s => s > myScore).length + 1;
 
   let prob;
 
