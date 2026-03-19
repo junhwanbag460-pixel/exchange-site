@@ -154,70 +154,68 @@ document.getElementById("modal").style.display="none";
 
 function renderCards(){
 
-let container = document.getElementById("cardContainer");
-container.innerHTML = "";
+  let container = document.getElementById("cardContainer");
+  container.innerHTML = "";
 
-let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
+  let keyword = document.getElementById("searchBox").value.toLowerCase().trim();
 
-let filtered = [...universityData];
+  let filtered = [...universityData];
 
-// 🔥 검색어 없으면 전체 보여주기
-if(keyword !== ""){
-  filtered = filtered.filter(u =>
-    u.name.toLowerCase().includes(keyword) ||
-    u.country.toLowerCase().includes(keyword)
-  );
-}
-
-// 🔥 데이터 없을 때만 메시지
-if(filtered.length === 0){
-  container.innerHTML = "<div style='color:#999'>검색 결과 없음</div>";
-  return;
-}
-filtered.forEach(u=>{
-
-let card = document.createElement("div");
-
-card.onclick = () => openModal(u);
-
-let resultCache = {};
-
-filtered.forEach(u=>{
-
-  if(resultCache[u.name] === undefined){
-    resultCache[u.name] = simulateAssignment(u.name);
+  if(keyword !== ""){
+    filtered = filtered.filter(u =>
+      u.name.toLowerCase().includes(keyword) ||
+      u.country.toLowerCase().includes(keyword)
+    );
   }
 
-  let result = resultCache[u.name];
+  if(filtered.length === 0){
+    container.innerHTML = "<div style='color:#999'>검색 결과 없음</div>";
+    return;
+  }
 
-let color = result ? "green" : "red";
+  // ✅ 여기서 캐시 한 번만 생성
+  let resultCache = {};
 
-let cutoff = "-"; // 표시용
-  
-card.style = `
-width:220px;
-border:1px solid #ddd;
-border-radius:12px;
-padding:12px;
-cursor:pointer;
-box-shadow:2px 2px 8px rgba(0,0,0,0.1);
-text-align:center;
-`;
+  filtered.forEach(u=>{
 
-card.innerHTML = `
-<h4>${u.name}</h4>
-<p>🌍 ${u.country}</p>
-<p>👥 ${u.applicants} / ${u.seats}</p>
-<p>🔥 경쟁률: ${u.rate}</p>
-<p>📈 컷라인: ${cutoff}</p>
-<p style="font-weight:bold;color:${color}">
-🎯 ${result ? "합격" : "탈락"}
-</p>
-`;
+    // ✅ 캐싱 적용
+    if(resultCache[u.name] === undefined){
+      resultCache[u.name] = simulateAssignment(u.name);
+    }
 
-container.appendChild(card);
+    let result = resultCache[u.name];
+    let color = result ? "green" : "red";
 
-});
+    let card = document.createElement("div");
+
+    card.onclick = () => openModal(u);
+
+    let cutoff = "-";
+
+    card.style = `
+    width:220px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:12px;
+    cursor:pointer;
+    box-shadow:2px 2px 8px rgba(0,0,0,0.1);
+    text-align:center;
+    `;
+
+    card.innerHTML = `
+    <h4>${u.name}</h4>
+    <p>🌍 ${u.country}</p>
+    <p>👥 ${u.applicants} / ${u.seats}</p>
+    <p>🔥 경쟁률: ${u.rate}</p>
+    <p>📈 컷라인: ${cutoff}</p>
+    <p style="font-weight:bold;color:${color}">
+    🎯 ${result ? "합격" : "탈락"}
+    </p>
+    `;
+
+    container.appendChild(card);
+
+  });
 }
 
 function simulateAssignment(targetUniversity){
