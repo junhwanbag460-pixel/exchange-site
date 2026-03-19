@@ -159,8 +159,11 @@ function calculateProbability(u){
 
   probabilityCache[u.name] = {
     prob: prob,
-    cutoff: Number(avgCutoff.toFixed(2))
-  };
+    if(cutoff !== "-"){
+  cutoff = Number(cutoff.toFixed(2));
+}
+
+}  
 
   return prob;
 }
@@ -213,9 +216,6 @@ if(isNaN(cutoff)){
 }
 
 cutoff = Number(cutoff.toFixed(2));
-
-// 확률 계산
-let prob = calculateProbability(u);
 
 // 상태 판단
 let status = "";
@@ -285,8 +285,6 @@ let cutoff = probabilityCache[u.name]?.cutoff;
 if(!cutoff) cutoff = "-";
 if(isNaN(cutoff)) cutoff = "-";
 else cutoff = cutoff.toFixed(2);
-
-let prob = calculateProbability(u);
 
 let color;
 if(prob >= 80) color = "green";
