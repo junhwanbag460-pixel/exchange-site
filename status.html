@@ -214,15 +214,15 @@ function checkCanApply(u){
   // 1️⃣ 시험 종류 지원 여부
   let supports = false;
 
-  if(myBaseInfo.language === "TOEFL" && u.min_toefl){
-    supports = true;
-  }
-  else if(myBaseInfo.language === "IELTS" && u.min_ielts){
-    supports = true;
-  }
-  else if(myBaseInfo.language === "기관TOEFL" && u.min_inst){
-    supports = true;
-  }
+  if(myBaseInfo.language === "TOEFL" && u.min_toefl !== undefined){
+  supports = true;
+}
+else if(myBaseInfo.language === "IELTS" && u.min_ielts !== undefined){
+  supports = true;
+}
+else if(myBaseInfo.language === "기관TOEFL" && u.min_inst !== undefined){
+  supports = true;
+}
 
   if(!supports) return false;
 
@@ -263,7 +263,7 @@ let cutoff = parseFloat(u.cutoff);
 if(isNaN(cutoff)){
   cutoff = null;
 }else{
-  cutoff = round2(cutoff);
+  cutoff = Number(cutoff);
 }
 
 let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
@@ -431,8 +431,8 @@ ${
   ? `<p style="color:#ff0000 !important;font-weight:900;font-size:16px">🚫 지원 불가능</p>`
   : `
     <p>📉 컷라인: ${
-  u.cutoff && !isNaN(parseFloat(u.cutoff))
-  ? round2(parseFloat(u.cutoff)).toFixed(2)
+  u.cutoff && !isNaN(Number(u.cutoff))
+  ? Number(u.cutoff).toFixed(2)
   : "-"
 }</p>
 
