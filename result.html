@@ -165,6 +165,19 @@ let myChoices = [];
   
 let userEmail=localStorage.getItem("userEmail");
 
+// ⭐ 반드시 추가 (핵심)
+fetch(API_URL+"?action=student&email="+userEmail)
+.then(res=>res.json())
+.then(data=>{
+  if(data){
+    myBaseInfo = {
+      gpa: Number(data.gpa),
+      language: data.language,
+      lang_score: Number(data.lang_score)
+    };
+  }
+});  
+
 if(!userEmail){
 alert("로그인이 필요합니다");
 window.location.href="index.html";
@@ -183,14 +196,6 @@ data.forEach((r, i)=>{
   if(i === 0){
   myScore = Number(r.total);
   localStorage.setItem("myScore", myScore);
-
-  // ⭐ 추가
-  myBaseInfo = {
-    gpa: r.gpa,
-    language: r.language,
-    lang_score: r.lang_score
-  };
-}
   
   let row=document.createElement("tr");
 
@@ -722,6 +727,11 @@ card.onclick = () => {
 
 function autoSubmitApplication(choices){
 
+  let language = myBaseInfo.language;
+
+  // ⭐ 핵심
+  if(language === "INST") language = "기관TOEFL";
+
   fetch(API_URL, {
     method: "POST",
     body: new URLSearchParams({
@@ -730,7 +740,7 @@ function autoSubmitApplication(choices){
 
       // ⭐ 기존 값 유지 (필수)
       gpa: myBaseInfo.gpa,
-      language: myBaseInfo.language,
+      language: language,
       lang_score: myBaseInfo.lang_score,
       total: myScore,
 
