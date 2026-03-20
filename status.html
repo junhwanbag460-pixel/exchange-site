@@ -272,8 +272,16 @@ function renderCards(){
   filtered.forEach(u=>{
 
     // ⭐ 컷 대비 점수 차이 계산
-let cutoff = round2(parseFloat(u.cutoff));
-let gap = isNaN(cutoff) ? null : round2(myScore - cutoff);
+let cutoff = parseFloat(u.cutoff);
+
+// ⭐ cutoff 없으면 추정값 사용
+if(isNaN(cutoff)){
+  cutoff = round2(myScore);  // 기본값 (최소한 계산 가능하게)
+}else{
+  cutoff = round2(cutoff);
+}
+
+let gap = round2(myScore - cutoff);
 
 let gapText = "";
 let gapColor = "#999";
