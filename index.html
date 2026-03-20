@@ -524,7 +524,12 @@ if(data && data.choice1){
 
 document.getElementById("nickname").value = data.nickname;
 document.getElementById("gpa").value = data.gpa;
-document.getElementById("language").value = data.language;
+let lang = data.language;
+
+// ⭐ 기존 데이터 보정 (핵심)
+if(lang === "기관TOEFL") lang = "INST";
+
+document.getElementById("language").value = lang;
 renderDetailInputs();
 document.getElementById("lang_score").value = data.lang_score;
 
