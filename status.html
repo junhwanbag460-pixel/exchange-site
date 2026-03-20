@@ -214,12 +214,15 @@ function checkCanApply(u){
   let lang = myBaseInfo.language;
   let score = Number(myBaseInfo.lang_score);
 
-  // 🔥 language_requirement 없으면 지원 불가 처리
+  // ⭐ 어학 종류 없으면 무조건 불가
   if(!u.language_requirement){
     return false;
   }
 
   let allowed = u.language_requirement.split(",").map(v => v.trim());
+
+  // ⭐ 기관토플 보정
+  if(lang === "INST") lang = "기관TOEFL";
 
   if(!allowed.includes(lang)){
     return false;
