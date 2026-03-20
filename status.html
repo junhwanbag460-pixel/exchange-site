@@ -262,9 +262,15 @@ let strategyColor = s.color;
   "<br>내 점수: " + myScore +
 "<br>컷라인: " + (u.cutoff ? round2(parseFloat(u.cutoff)).toFixed(2) : "-") +
   "<br>점수차: <span style='color:"+gapColor+"'>" + (gap !== null ? gapText : "데이터 없음") + "</span>" +
-"<br>지원전략: <span style='color:"+(canApply ? strategyColor : "gray")+"'>" + 
-(canApply ? (strategy + " 지원") : "데이터 없음") +
-"</span>" +
+"<br>지원전략: <span style='color:" + 
+(canApply ? strategyColor : "red") + "'>" + 
+
+(canApply 
+  ? (gap !== null ? (strategy + " 지원") : "데이터 없음")
+  : "지원 불가능"
+) 
+
++ "</span>"
 "<br>지원자: " + u.applicants +
   "<br>정원: " + u.seats;
 
@@ -401,8 +407,14 @@ if(gap !== null){
 📊 ${gap !== null ? gapText : "데이터 없음"}
 </p>
 
-<p style="font-weight:bold;color:${canApply ? strategyColor : "gray"}">
-📌 ${canApply ? (strategy + " 지원") : "데이터 없음"}
+<p style="font-weight:bold;color:${
+  !canApply ? "red" : (gap !== null ? strategyColor : "#999")
+}">
+📌 ${
+  !canApply 
+    ? "지원 불가능"
+    : (gap !== null ? (strategy + " 지원") : "데이터 없음")
+}
 </p>
 
 `;
