@@ -452,12 +452,17 @@ btn.disabled = false;
 return;
 }
 
+let language = document.getElementById("language").value;
+
+// ⭐ 이거 추가 (핵심)
+if(language === "INST") language = "기관TOEFL";    
+
 let url = API_URL + "?action=submit"
 + "&email=" + encodeURIComponent(userEmail)
 + "&nickname=" + encodeURIComponent(document.getElementById("nickname").value)
 + "&gpa=" + document.getElementById("gpa").value
-+ "&language=" + document.getElementById("language").value
-+ "&lang_score=" + document.getElementById("lang_score").value
++ "&language=" + language
++ "&lang_score=" + Number(document.getElementById("lang_score").value)
 + "&total=" + calculateTotal()
 + "&choice1=" + encodeURIComponent(document.getElementById("choice1").value)
 + "&choice2=" + encodeURIComponent(document.getElementById("choice2").value)
