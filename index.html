@@ -50,7 +50,7 @@ data-auto_prompt="false">
 <select id="language">
 <option value="TOEFL">토플</option>
 <option value="IELTS">아이엘츠</option>
-<option value="기관TOEFL">ITP (기관토플)</option>
+<option value="INST">ITP (기관토플)</option>
 </select>
 
 <br><br>
@@ -156,7 +156,7 @@ return universityList.filter(u => {
     if(score < u.min_ielts) return false;
   }
 
-  if(selectedLang === "기관TOEFL" && u.min_inst){
+  if(selectedLang === "INST" && u.min_inst){
     if(score < u.min_inst) return false;
   }
 
@@ -258,7 +258,7 @@ if(u.language_requirement){
 if(!isNaN(score)){
   if(lang === "TOEFL" && u.min_toefl && score < u.min_toefl) blocked = true;
   if(lang === "IELTS" && u.min_ielts && score < u.min_ielts) blocked = true;
-  if(lang === "기관TOEFL" && u.min_inst && score < u.min_inst) blocked = true;
+  if(lang === "INST" && u.min_inst && score < u.min_inst) blocked = true;
 }
 
 if(blocked){
