@@ -196,17 +196,17 @@ let canApply = true;
 if(typeof myBaseInfo !== "undefined"){
 
 if(myBaseInfo.language === "TOEFL"){
-  if(!u.min_toefl || myBaseInfo.lang_score < u.min_toefl){
+  if(u.min_toefl && myBaseInfo.lang_score < u.min_toefl){
     canApply = false;
   }
 }
 else if(myBaseInfo.language === "IELTS"){
-  if(!u.min_ielts || myBaseInfo.lang_score < u.min_ielts){
+  if(u.min_ielts && myBaseInfo.lang_score < u.min_ielts){
     canApply = false;
   }
 }
 else if(myBaseInfo.language === "INST"){
-  if(!u.min_inst || myBaseInfo.lang_score < u.min_inst){
+  if(u.min_inst && myBaseInfo.lang_score < u.min_inst){
     canApply = false;
   }
 }
@@ -233,6 +233,7 @@ if(isNaN(cutoff)){
 let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
 
 if(!canApply){
+  cutoff = null;
   gap = null;
 }
 
@@ -359,6 +360,7 @@ if(isNaN(cutoff)){
 let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
 
 if(!canApply){
+  cutoff = null;
   gap = null;
 }
 
