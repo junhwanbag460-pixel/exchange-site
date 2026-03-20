@@ -193,26 +193,29 @@ let table=document.getElementById("resultTable");
 table.innerHTML="";
 
 data.forEach((r, i)=>{
+
+  // ⭐ 점수는 첫 번째만
   if(i === 0){
-  myScore = Number(r.total);
-  localStorage.setItem("myScore", myScore);
-  
+    myScore = Number(r.total);
+    localStorage.setItem("myScore", myScore);
+  }
+
+  // ⭐ 이건 모든 데이터에서 실행
   let row=document.createElement("tr");
 
-row.innerHTML=`
-<td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
-▶ ${r.university}
-</td>
-<td>${r.choice_rank}</td>
-<td>${Number(r.total).toFixed(2)}</td>
-<td>${r.rank}</td>
-<td>${r.result === "미선발" ? "" : r.result}</td>
-`;
+  row.innerHTML=`
+  <td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
+  ▶ ${r.university}
+  </td>
+  <td>${r.choice_rank}</td>
+  <td>${Number(r.total).toFixed(2)}</td>
+  <td>${r.rank}</td>
+  <td>${r.result === "미선발" ? "" : r.result}</td>
+  `;
 
-table.appendChild(row);
+  table.appendChild(row);
 
 });
-
 let assigned = data.find(r => r.result === "합격");
 if(assigned){
 assignedUniversity = assigned.university;
