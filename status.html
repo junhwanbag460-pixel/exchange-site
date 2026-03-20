@@ -195,7 +195,7 @@ let canApply = true;
 
 if(typeof myBaseInfo !== "undefined"){
 
-  if(myBaseInfo.language === "TOEFL"){
+if(myBaseInfo.language === "TOEFL"){
   if(!u.min_toefl || myBaseInfo.lang_score < u.min_toefl){
     canApply = false;
   }
