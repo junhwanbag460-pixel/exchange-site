@@ -34,6 +34,9 @@ justify-content:center;
 <script>
 
 const API_URL="https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
+function round2(num){
+  return Math.round(num * 100) / 100;
+}  
 
 let universityData=[];
 let currentSort="";
@@ -42,7 +45,7 @@ let realStudents = []; // ⭐ 이거 추가
 let chart;
 
 let rawScore = localStorage.getItem("myScore");
-let myScore = rawScore ? Number(Number(rawScore).toFixed(2)) : 0;
+let myScore = rawScore ? round2(Number(rawScore)) : 0;
 
 function loadStatus(){
 
@@ -187,8 +190,8 @@ function openModal(u){
   let color = result ? "green" : "red";
 
   // ⭐ 먼저 계산
-  let cutoff = parseFloat(u.cutoff);
-  let gap = isNaN(cutoff) ? null : (myScore - cutoff);
+let cutoff = round2(parseFloat(u.cutoff));
+let gap = isNaN(cutoff) ? null : round2(myScore - cutoff); 
 
   let gapText = "";
   let gapColor = "#999";
@@ -269,8 +272,8 @@ function renderCards(){
   filtered.forEach(u=>{
 
     // ⭐ 컷 대비 점수 차이 계산
-let cutoff = parseFloat(u.cutoff);
-let gap = isNaN(cutoff) ? null : (myScore - cutoff);
+let cutoff = round2(parseFloat(u.cutoff));
+let gap = isNaN(cutoff) ? null : round2(myScore - cutoff);
 
 let gapText = "";
 let gapColor = "#999";
