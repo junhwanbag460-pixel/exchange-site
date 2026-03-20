@@ -219,6 +219,10 @@ if(isNaN(cutoff)){
 
 let gap = round2(myScore - cutoff);
 
+if(!canApply){
+  gap = null;
+}
+
   let gapText = "";
   let gapColor = "#999";
 
@@ -244,10 +248,10 @@ let strategyColor = s.color;
   document.getElementById("modalTitle").innerHTML =
   u.name + " (" + u.country + ")" +
   "<br>내 점수: " + myScore +
-  "<br>컷라인: " + (u.cutoff || "-") +
+"<br>컷라인: " + (u.cutoff ? round2(parseFloat(u.cutoff)).toFixed(2) : "-") +
   "<br>점수차: <span style='color:"+gapColor+"'>" + (gap !== null ? gapText : "데이터 없음") + "</span>" +
-    "<br>지원전략: <span style='color:"+strategyColor+"'>" + 
-(canApply ? strategy + " 지원" : "지원 불가능") + 
+"<br>지원전략: <span style='color:"+(canApply ? strategyColor : "gray")+"'>" + 
+(canApply ? (strategy + " 지원") : "데이터 없음") +
 "</span>" +
 "<br>지원자: " + u.applicants +
   "<br>정원: " + u.seats;
@@ -331,6 +335,10 @@ if(isNaN(cutoff)){
 
 let gap = round2(myScore - cutoff);
 
+if(!canApply){
+  gap = null;
+}
+
 let gapText = "";
 let gapColor = "#999";
 
@@ -378,7 +386,7 @@ if(gap !== null){
 </p>
 
 <p style="font-weight:bold;color:${canApply ? strategyColor : "gray"}">
-📌 ${canApply ? (strategy + " 지원") : "지원 불가능"}
+📌 ${canApply ? (strategy + " 지원") : "데이터 없음"}
 </p>
 
 `;
