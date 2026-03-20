@@ -246,6 +246,14 @@ this.innerText="▼ "+this.dataset.uni;
 });
 });
 
+// ⭐⭐⭐ 여기 추가 ⭐⭐⭐
+loadStudents(()=>{
+  loadStatusData(()=>{
+    loadTopUniversities();
+    loadRecommendedUniversities();
+  });
+});  
+
 });
 
 function loadStudents(callback){
@@ -479,7 +487,7 @@ if(testChoices.length === 0){
 let status="";
 let color="black";
 
-if(assignedUniversity === u.name)
+if(assignedUniversity === u.name){
   status="🟢 추천";
   color="green";
 }else{
@@ -530,17 +538,6 @@ ${status}
   table.appendChild(row);
 });
 }
-
-loadStudents(()=>{
-  loadStatusData(()=>{
-    loadTopUniversities();
-
-    setTimeout(()=>{
-      loadRecommendedUniversities();
-    }, 500);
-
-  });
-});
 
 setInterval(()=>{
   loadStatusData(()=>{
