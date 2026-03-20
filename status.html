@@ -214,16 +214,18 @@ function checkCanApply(u){
   let lang = myBaseInfo.language;
   let score = Number(myBaseInfo.lang_score);
 
-  // ⭐ language_requirement 기준 필터
-  if(u.language_requirement){
-    let allowed = u.language_requirement.split(",").map(v => v.trim());
-
-    if(!allowed.includes(lang)){
-      return false; // 🔥 여기서 바로 차단
-    }
+  // 🔥 language_requirement 없으면 지원 불가 처리
+  if(!u.language_requirement){
+    return false;
   }
 
-  // ⭐ 점수 조건
+  let allowed = u.language_requirement.split(",").map(v => v.trim());
+
+  if(!allowed.includes(lang)){
+    return false;
+  }
+
+  // 점수 조건
   if(lang === "TOEFL"){
     return score >= Number(u.min_toefl || 0);
   }
