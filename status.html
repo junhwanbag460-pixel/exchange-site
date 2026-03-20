@@ -212,7 +212,7 @@ function openModal(u){
   // ⭐ 지원 가능 여부
 let canApply = true;
 
-if(myBaseInfo === null){
+if(myBaseInfo !== null){
 
 if(myBaseInfo.language === "TOEFL"){
   if(u.min_toefl !== undefined && u.min_toefl !== null && myBaseInfo.lang_score < u.min_toefl){
@@ -351,7 +351,7 @@ if(typeof myBaseInfo === "undefined"){
 
   let canApply = true;
 
-  if(typeof myBaseInfo !== "undefined"){
+if(myBaseInfo !== null){
 
     if(myBaseInfo.language === "TOEFL"){
       if(u.min_toefl !== undefined && u.min_toefl !== null && myBaseInfo.lang_score < u.min_toefl){
@@ -408,22 +408,21 @@ if(typeof myBaseInfo === "undefined"){
 
   let card = document.createElement("div");
 
-  if(canApply){
-    card.onclick = () => openModal(u);
-  } else {
-    card.style.cursor = "not-allowed";
-  }
+  if(!canApply){
+  card.style.pointerEvents = "none"; // ⭐ 이게 가장 확실
+}
 
-  card.style = `
-  width:220px;
-  border:1px solid #ddd;
-  border-radius:12px;
-  padding:12px;
-  cursor:${canApply ? "pointer" : "not-allowed"};
-  box-shadow:2px 2px 8px rgba(0,0,0,0.1);
-  text-align:center;
-  opacity:${canApply ? "1" : "0.4"};
-  `;
+card.style = `
+width:220px;
+border:1px solid #ddd;
+border-radius:12px;
+padding:12px;
+cursor:${canApply ? "pointer" : "not-allowed"};
+box-shadow:2px 2px 8px rgba(0,0,0,0.1);
+text-align:center;
+opacity:${canApply ? "1" : "0.4"};
+filter:${canApply ? "none" : "grayscale(100%)"};  // ⭐ 추가
+`;
 
   card.innerHTML = `
   <h4>${u.name}</h4>
