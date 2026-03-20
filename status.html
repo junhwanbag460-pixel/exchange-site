@@ -192,34 +192,14 @@ function renderCards(){
     return;
   }
 
-  // ✅ 여기서 캐시 한 번만 생성
-  let resultCache = {};
-
   filtered.forEach(u=>{
 
-    // ✅ 캐싱 적용
- if(resultCache[u.name] === undefined){
-
-  let testChoices = [...myChoices];
-
-  if(testChoices.length === 0){
-    testChoices = [u.name];
-  }else{
-    testChoices[testChoices.length - 1] = u.name;
-  }
-
-  let assigned = simulateFullAssignment(testChoices);
-  resultCache[u.name] = (assigned === u.name);
-}
-
-    let result = resultCache[u.name];
+    let result = myResultsMap[u.name] === true;
     let color = result ? "green" : "red";
 
     let card = document.createElement("div");
 
     card.onclick = () => openModal(u);
-
-    let cutoff = "-";
 
     card.style = `
     width:220px;
@@ -236,7 +216,6 @@ function renderCards(){
     <p>🌍 ${u.country}</p>
     <p>👥 ${u.applicants} / ${u.seats}</p>
     <p>🔥 경쟁률: ${u.rate}</p>
-    <p>📈 컷라인: ${cutoff}</p>
     <p style="font-weight:bold;color:${color}">
     🎯 ${result ? "합격" : "탈락"}
     </p>
@@ -246,98 +225,6 @@ function renderCards(){
 
   });
 }
-
-function simulateFullAssignment(testChoices){
-
-  let students = realStudents.map(s => ({
-    score: s.score,
-    choices: [...s.choices],
-    currentChoice: 0,
-    assigned: null
-  }));
-
-  students.push({
-    score: myScore,
-    choices: testChoices,
-    currentChoice: 0,
-    assigned: null,
-    me: true
-  });
-
-  students.sort((a,b)=>b.score-a.score);
-
-  let seatsMap = {};
-  universityData.forEach(u=>{
-    seatsMap[u.name] = Number(u.seats) || 1;
-  });
-
-  let changed = true;
-
-  while(changed){
-    changed = false;
-
-    let pools = {};
-
-    students.forEach(s=>{
-      if(s.assigned === null && s.currentChoice < s.choices.length){
-        let uni = s.choices[s.currentChoice];
-        if(!pools[uni]) pools[uni] = [];
-        pools[uni].push(s);
-      }
-    });
-
-    for(let uni in pools){
-
-      let candidates = pools[uni].slice();
-
-      students.forEach(s=>{
-        if(s.assigned === uni){
-          candidates.push(s);
-        }
-      });
-
-      candidates.sort((a,b)=>b.score-a.score);
-
-      let accepted = candidates.slice(0, seatsMap[uni]);
-      let rejected = candidates.slice(seatsMap[uni]);
-
-      accepted.forEach(s=>{
-        if(s.assigned !== uni){
-          s.assigned = uni;
-          changed = true;
-        }
-      });
-
-      rejected.forEach(s=>{
-        if(s.assigned === uni){
-          s.assigned = null;
-        }
-        s.currentChoice++;
-      });
-    }
-  }
-
-  let me = students.find(s=>s.me);
-  return me.assigned;
-}  
-
-let myChoices = [];
-
-fetch(API_URL+"?action=myresults&email="+localStorage.getItem("userEmail"))
-.then(res=>res.json())
-.then(data=>{
-  if(data.length > 0){
-    myChoices = [
-      data[0].choice1,
-      data[0].choice2,
-      data[0].choice3,
-      data[0].choice4,
-      data[0].choice5
-    ].filter(x => x);
-  }
-
-  renderCards();
-});  
 
 </script>
 
