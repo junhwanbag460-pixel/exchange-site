@@ -182,6 +182,25 @@ border-radius:10px;
   
 function openModal(u){
 
+  // ⭐ 지원 가능 여부
+let canApply = true;
+
+if(typeof myBaseInfo !== "undefined"){
+
+  if(myBaseInfo.language === "TOEFL"){
+    if(myBaseInfo.lang_score < (u.min_toefl || 0)){
+      canApply = false;
+    }
+  }
+
+  if(myBaseInfo.language === "IELTS"){
+    if(myBaseInfo.lang_score < (u.min_ielts || 0)){
+      canApply = false;
+    }
+  }
+
+}
+
   document.getElementById("modal").style.display="block";
 
   let result = (assignedUniversity === u.name);
@@ -190,8 +209,15 @@ function openModal(u){
   let color = result ? "green" : "red";
 
   // ⭐ 먼저 계산
-let cutoff = round2(parseFloat(u.cutoff));
-let gap = isNaN(cutoff) ? null : round2(myScore - cutoff); 
+let cutoff = parseFloat(u.cutoff);
+
+if(isNaN(cutoff)){
+  cutoff = round2(myScore);
+}else{
+  cutoff = round2(cutoff);
+}
+
+let gap = round2(myScore - cutoff);
 
   let gapText = "";
   let gapColor = "#999";
@@ -220,8 +246,10 @@ let strategyColor = s.color;
   "<br>내 점수: " + myScore +
   "<br>컷라인: " + (u.cutoff || "-") +
   "<br>점수차: <span style='color:"+gapColor+"'>" + (gap !== null ? gapText : "데이터 없음") + "</span>" +
-    "<br>지원전략: <span style='color:"+strategyColor+"'>" + (gap !== null ? strategy + " 지원" : "") + "</span>" +
-  "<br>지원자: " + u.applicants +
+    "<br>지원전략: <span style='color:"+strategyColor+"'>" + 
+(canApply ? strategy + " 지원" : "지원 불가능") + 
+"</span>" +
+"<br>지원자: " + u.applicants +
   "<br>정원: " + u.seats;
 
 }
@@ -270,6 +298,26 @@ function renderCards(){
   }
 
   filtered.forEach(u=>{
+
+    // ⭐ 지원 가능 여부
+let canApply = true;
+
+// myBaseInfo 없으면 일단 통과 (에러 방지)
+if(typeof myBaseInfo !== "undefined"){
+
+  if(myBaseInfo.language === "TOEFL"){
+    if(myBaseInfo.lang_score < (u.min_toefl || 0)){
+      canApply = false;
+    }
+  }
+
+  if(myBaseInfo.language === "IELTS"){
+    if(myBaseInfo.lang_score < (u.min_ielts || 0)){
+      canApply = false;
+    }
+  }
+
+}
 
     // ⭐ 컷 대비 점수 차이 계산
 let cutoff = parseFloat(u.cutoff);
@@ -329,8 +377,8 @@ if(gap !== null){
 📊 ${gap !== null ? gapText : "데이터 없음"}
 </p>
 
-<p style="font-weight:bold;color:${strategyColor}">
-📌 ${gap !== null ? strategy + " 지원" : ""}
+<p style="font-weight:bold;color:${canApply ? strategyColor : "gray"}">
+📌 ${canApply ? (strategy + " 지원") : "지원 불가능"}
 </p>
 
 `;
