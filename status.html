@@ -40,6 +40,7 @@ function round2(num){
 
 let universityData=[];
 let currentSort="";
+let myBaseInfo = null; // ⭐ 이거 추가  
 
 let realStudents = []; // ⭐ 이거 추가
 let chart;
@@ -211,7 +212,7 @@ function openModal(u){
   // ⭐ 지원 가능 여부
 let canApply = true;
 
-if(typeof myBaseInfo !== "undefined"){
+if(myBaseInfo === null){
 
 if(myBaseInfo.language === "TOEFL"){
   if(u.min_toefl !== undefined && u.min_toefl !== null && myBaseInfo.lang_score < u.min_toefl){
