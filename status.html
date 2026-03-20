@@ -384,17 +384,23 @@ if(gap !== null){
     
     let card = document.createElement("div");
 
-    card.onclick = () => openModal(u);
+// ⭐ 지원 가능할 때만 클릭 가능
+if(canApply){
+  card.onclick = () => openModal(u);
+} else {
+  card.style.cursor = "not-allowed"; // 금지 커서
+};
 
     card.style = `
-    width:220px;
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:12px;
-    cursor:pointer;
-    box-shadow:2px 2px 8px rgba(0,0,0,0.1);
-    text-align:center;
-    `;
+width:220px;
+border:1px solid #ddd;
+border-radius:12px;
+padding:12px;
+cursor:${canApply ? "pointer" : "not-allowed"};
+box-shadow:2px 2px 8px rgba(0,0,0,0.1);
+text-align:center;
+opacity:${canApply ? "1" : "0.4"};
+`;
 
     card.innerHTML = `
 <h4>${u.name}</h4>
