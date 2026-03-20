@@ -211,35 +211,34 @@ function checkCanApply(u){
 
   if(myBaseInfo === null) return false;
 
-  // 1️⃣ 시험 종류 지원 여부
-  let supports = false;
+  let lang = myBaseInfo.language;
+  let score = Number(myBaseInfo.lang_score);
 
-  if(myBaseInfo.language === "TOEFL" && u.min_toefl !== undefined){
-  supports = true;
-}
-else if(myBaseInfo.language === "IELTS" && u.min_ielts !== undefined){
-  supports = true;
-}
-else if(myBaseInfo.language === "기관TOEFL" && u.min_inst !== undefined){
-  supports = true;
-}
+  // ⭐ language_requirement 기준 필터
+  if(u.language_requirement){
+    let allowed = u.language_requirement.split(",").map(v => v.trim());
 
-  if(!supports) return false;
-
-  // 2️⃣ 점수 조건
-  if(myBaseInfo.language === "TOEFL"){
-    return myBaseInfo.lang_score >= u.min_toefl;
+    if(!allowed.includes(lang)){
+      return false; // 🔥 여기서 바로 차단
+    }
   }
-  if(myBaseInfo.language === "IELTS"){
-    return myBaseInfo.lang_score >= u.min_ielts;
+
+  // ⭐ 점수 조건
+  if(lang === "TOEFL"){
+    return score >= Number(u.min_toefl || 0);
   }
-  if(myBaseInfo.language === "기관TOEFL"){
-    return myBaseInfo.lang_score >= u.min_inst;
+
+  if(lang === "IELTS"){
+    return score >= Number(u.min_ielts || 0);
+  }
+
+  if(lang === "기관TOEFL"){
+    return score >= Number(u.min_inst || 0);
   }
 
   return false;
-}  
-  
+}
+
 function openModal(u){
 
   // ⭐ 지원 가능 여부
@@ -428,7 +427,11 @@ filter:${canApply ? "none" : "grayscale(100%)"};  // ⭐ 추가
   <p>🔥 경쟁률: ${u.rate}</p>
 ${
   !canApply
-  ? `<p style="color:#ff0000 !important;font-weight:900;font-size:16px">🚫 지원 불가능</p>`
+? `
+<p style="color:red;font-weight:bold;font-size:16px">
+🚫 지원 불가능
+</p>
+`
   : `
     <p>📉 컷라인: ${
   u.cutoff && !isNaN(Number(u.cutoff))
