@@ -302,23 +302,10 @@ let rate = (applicants/seats).toFixed(2);
 html += "<p>경쟁률: "+rate+" : 1</p>";
 }
 
-let cutoff;
+// ⭐ 서버 기준 컷라인 사용
+let uniStatus = statusData.find(u => u.name === university);
 
-let index = Math.min(seats - 1, applicants - 1);
-cutoff = Number(data[index]?.total);
-
-// 기존 cutoff 아래에 추가
-
-let scores = data.map(d=>Number(d.total)).sort((a,b)=>b-a);
-
-let cutoffIndex = Math.min(seats - 1, scores.length - 1);
-
-cutoff = calculateDynamicCutoff({
-  cutoff: scores[cutoffIndex],
-  applicants: applicants,
-  seats: seats,
-  score_distribution: scores.join(",")
-});
+let cutoff = uniStatus ? Number(uniStatus.cutoff) : NaN;
   
 if(!isNaN(cutoff)){
 
@@ -731,40 +718,6 @@ card.onclick = () => {
     container.appendChild(card);
 
   });
-}  
-
-function calculateDynamicCutoff(u){
-  let base = parseFloat(u.cutoff);
-  if(isNaN(base)) base = myScore;
-
-  let applicants = Number(u.applicants) || 1;
-  let seats = Number(u.seats) || 1;
-
-  let scores = (u.score_distribution || "")
-    .split(",")
-    .map(Number)
-    .filter(x => !isNaN(x))
-    .sort((a,b)=>b-a);
-
-  if(scores.length === 0) return base;
-
-  let competition = applicants / seats;
-  let pressure_comp = Math.log(competition + 1);
-
-  let topN = scores.slice(0, seats * 2);
-  let leaveCount = topN.filter(s => s > base + 1).length;
-  let pressure_top = - (leaveCount / topN.length || 0);
-
-  let mid = scores.slice(seats, seats * 3);
-  let pressure_mid = mid.length / scores.length;
-
-  let predicted =
-    base +
-    pressure_comp * 0.8 +
-    pressure_mid * 0.5 +
-    pressure_top * 1.2;
-
-  return Number(predicted.toFixed(2));
 }  
 
 function autoSubmitApplication(choices){
