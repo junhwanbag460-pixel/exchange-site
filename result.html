@@ -490,8 +490,6 @@ if(testChoices.length === 0){
   testChoices[testChoices.length - 1] = u.name;
 }
 
-let assigned = simulateFullAssignment(testChoices);
-
 let status="";
 let color="black";
 
@@ -519,8 +517,7 @@ if(testChoices.length === 0){
   testChoices[testChoices.length - 1] = u.name;
 }
 
-let assigned = simulateFullAssignment(testChoices);
-let result = (assigned === u.name);
+let result = (u.name === assignedUniversity);
 
   let status="";
   let color="black";
@@ -593,8 +590,7 @@ if(testChoices.length === 0){
   testChoices[testChoices.length - 1] = u.name;
 }
 
-let assigned = simulateFullAssignment(testChoices);
-let result = (assigned === u.name);
+let result = (u.name === assignedUniversity);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
@@ -714,8 +710,7 @@ if(testChoices.length === 0){
   testChoices[testChoices.length - 1] = u.name;
 }
 
-let assigned = simulateFullAssignment(testChoices);
-let result = (assigned === u.name);
+let result = (u.name === assignedUniversity);
 
     let card = document.createElement("div");
 card.className = "card";   // 🔥 이거 추가
@@ -788,81 +783,6 @@ function calculateDynamicCutoff(u){
 
   return Number(predicted.toFixed(2));
 }  
-
-function simulateFullAssignment(testChoices){
-
-  let students = realStudents.map(s => ({
-    score: s.score,
-    choices: [...s.choices],
-    currentChoice: 0,
-    assigned: null
-  }));
-
-  // ⭐ 내 지원 추가 (핵심)
-  students.push({
-    score: myScore,
-    choices: testChoices,
-    currentChoice: 0,
-    assigned: null,
-    me: true
-  });
-
-  students.sort((a,b)=>b.score-a.score);
-
-  let seatsMap = {};
-  statusData.forEach(u=>{
-    seatsMap[u.name] = Number(u.seats) || 1;
-  });
-
-  let changed = true;
-
-  while(changed){
-    changed = false;
-
-    let pools = {};
-
-    students.forEach(s=>{
-      if(s.assigned === null && s.currentChoice < s.choices.length){
-        let uni = s.choices[s.currentChoice];
-        if(!pools[uni]) pools[uni] = [];
-        pools[uni].push(s);
-      }
-    });
-
-    for(let uni in pools){
-
-      let candidates = pools[uni].slice();
-
-      students.forEach(s=>{
-        if(s.assigned === uni){
-          candidates.push(s);
-        }
-      });
-
-      candidates.sort((a,b)=>b.score-a.score);
-
-      let accepted = candidates.slice(0, seatsMap[uni]);
-      let rejected = candidates.slice(seatsMap[uni]);
-
-      accepted.forEach(s=>{
-        if(s.assigned !== uni){
-          s.assigned = uni;
-          changed = true;
-        }
-      });
-
-      rejected.forEach(s=>{
-        if(s.assigned === uni){
-          s.assigned = null;
-        }
-        s.currentChoice++;
-      });
-    }
-  }
-
-  let me = students.find(s=>s.me);
-  return me.assigned; // ⭐ 대학 이름 반환
-}
 
 function autoSubmitApplication(choices){
 
