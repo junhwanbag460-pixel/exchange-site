@@ -415,18 +415,34 @@ if(myBaseInfo === null){
 
 card.style = `
 width:220px;
-border:1px solid #ddd;
+border:1px solid ${canApply ? "#ddd" : "#ff4d4f"};
 border-radius:12px;
 padding:12px;
 cursor:${canApply ? "pointer" : "not-allowed"};
 box-shadow:2px 2px 8px rgba(0,0,0,0.1);
 text-align:center;
-opacity:1;
-filter:${canApply ? "none" : "grayscale(100%)"};  // ⭐ 추가
+
+background:${canApply ? "white" : "#f5f5f5"};
+opacity:${canApply ? "1" : "0.6"};
+filter:${canApply ? "none" : "grayscale(100%)"};
 `;
 
   card.innerHTML = `
-  <h4>${u.name}</h4>
+${!canApply ? `
+<div style="
+background:#ff4d4f;
+color:white;
+padding:4px 8px;
+border-radius:6px;
+font-size:12px;
+margin-bottom:6px;
+display:inline-block;
+">
+🚫 지원 불가
+</div>
+` : ""}
+
+<h4>${u.name}</h4>
   <p>🌍 ${u.country}</p>
   <p>👥 ${u.applicants} / ${u.seats}</p>
   <p>🔥 경쟁률: ${u.rate}</p>
