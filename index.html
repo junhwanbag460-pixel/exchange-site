@@ -127,6 +127,9 @@ let universityList=[];
 function getFilteredUniversities(){
 
 let selectedLang = document.getElementById("language").value || "TOEFL";
+
+// ⭐ 핵심 추가
+if(selectedLang === "INST") selectedLang = "기관TOEFL";
 let score = parseFloat(document.getElementById("lang_score").value);
 
 return universityList.filter(u => {
@@ -247,6 +250,9 @@ option.text=u.name;
 
 let score = parseFloat(document.getElementById("lang_score").value);
 let lang = document.getElementById("language").value;
+
+// ⭐ 추가
+if(lang === "INST") lang = "기관TOEFL";
 
 let blocked = false;
 
@@ -585,7 +591,12 @@ function enableInputs(){
 document.querySelectorAll("input, select")
 .forEach(el => el.disabled = false);
 
-renderDetailInputs();   // ⭐ 추가
+// ⭐ 추가 (핵심)
+if(!ById("language").value){
+  ById("language").value = "TOEFL";
+}
+
+renderDetailInputs();
 }
   
 </script>
