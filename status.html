@@ -194,7 +194,11 @@ function renderCards(){
 
   filtered.forEach(u=>{
 
-    let result = myResultsMap[u.name] === true;
+    let result = false;
+
+if(assignedUniversity === u.name){
+  result = true;
+}
     let color = result ? "green" : "red";
 
     let card = document.createElement("div");
