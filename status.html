@@ -177,15 +177,61 @@ function openModal(u){
   let status = result ? "🟢 합격" : "🔴 탈락";
   let color = result ? "green" : "red";
 
+  // ⭐ 먼저 계산
+  let cutoff = parseFloat(u.cutoff);
+  let gap = isNaN(cutoff) ? null : (myScore - cutoff);
+
+  let gapText = "";
+  let gapColor = "#999";
+
+  // ⭐ 지원 유형 판단
+let s = getStrategy(gap);
+let strategy = s.text;
+let strategyColor = s.color;
+
+  if(gap !== null){
+    if(gap >= 1){
+      gapText = `+${gap.toFixed(2)} (안정)`;
+      gapColor = "green";
+    } else if(gap >= -1){
+      gapText = `${gap.toFixed(2)} (경계)`;
+      gapColor = "orange";
+    } else {
+      gapText = `${gap.toFixed(2)} (위험)`;
+      gapColor = "red";
+    }
+  }
+
+  // ⭐ 그 다음 UI
   document.getElementById("modalTitle").innerHTML =
   u.name + " (" + u.country + ")" +
-  "<br>결과: <span style='color:"+color+"'>" + (result ? "합격" : "탈락") + "</span>" +
   "<br>내 점수: " + myScore +
+  "<br>컷라인: " + (u.cutoff || "-") +
+  "<br>점수차: <span style='color:"+gapColor+"'>" + (gap !== null ? gapText : "데이터 없음") + "</span>" +
+    "<br>지원전략: <span style='color:"+strategyColor+"'>" + (gap !== null ? strategy + " 지원" : "") + "</span>" +
   "<br>지원자: " + u.applicants +
   "<br>정원: " + u.seats;
 
 }
 
+// ⭐ 지원 전략 계산 함수 (중복 제거용)
+function getStrategy(gap){
+
+  if(gap === null){
+    return {text:"", color:"#666"};
+  }
+
+  if(gap >= 3){
+    return {text:"상향", color:"blue"};
+  }
+
+  if(gap >= 0){
+    return {text:"적정", color:"green"};
+  }
+
+  return {text:"하향", color:"red"};
+}
+  
 function closeModal(){
 document.getElementById("modal").style.display="none";
 }
@@ -213,9 +259,31 @@ function renderCards(){
 
   filtered.forEach(u=>{
 
-    let result = (assignedUniversity === u.name);
-    let color = result ? "green" : "red";
+    // ⭐ 컷 대비 점수 차이 계산
+let cutoff = parseFloat(u.cutoff);
+let gap = isNaN(cutoff) ? null : (myScore - cutoff);
 
+let gapText = "";
+let gapColor = "#999";
+
+  // ⭐ 지원 유형 판단
+let s = getStrategy(gap);
+let strategy = s.text;
+let strategyColor = s.color;
+
+if(gap !== null){
+  if(gap >= 1){
+    gapText = `+${gap.toFixed(2)} (안정)`;
+    gapColor = "green";
+  } else if(gap >= -1){
+    gapText = `${gap.toFixed(2)} (경계)`;
+    gapColor = "orange";
+  } else {
+    gapText = `${gap.toFixed(2)} (위험)`;
+    gapColor = "red";
+  }
+}
+    
     let card = document.createElement("div");
 
     card.onclick = () => openModal(u);
@@ -231,14 +299,21 @@ function renderCards(){
     `;
 
     card.innerHTML = `
-    <h4>${u.name}</h4>
-    <p>🌍 ${u.country}</p>
-    <p>👥 ${u.applicants} / ${u.seats}</p>
-    <p>🔥 경쟁률: ${u.rate}</p>
-    <p style="font-weight:bold;color:${color}">
-    🎯 ${result ? "합격" : "탈락"}
-    </p>
-    `;
+<h4>${u.name}</h4>
+<p>🌍 ${u.country}</p>
+<p>👥 ${u.applicants} / ${u.seats}</p>
+<p>🔥 경쟁률: ${u.rate}</p>
+<p>📉 컷라인: ${u.cutoff || "-"}</p>
+
+<p style="font-weight:bold;color:${gapColor}">
+📊 ${gap !== null ? gapText : "데이터 없음"}
+</p>
+
+<p style="font-weight:bold;color:${strategyColor}">
+📌 ${gap !== null ? strategy + " 지원" : ""}
+</p>
+
+`;
 
     container.appendChild(card);
 
