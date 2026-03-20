@@ -405,6 +405,9 @@ if(myBaseInfo === null){
   }
 
   let card = document.createElement("div");
+   if(canApply){
+  card.onclick = () => openModal(u);
+}
 
 card.style = `
 width:220px;
@@ -414,7 +417,7 @@ padding:12px;
 cursor:${canApply ? "pointer" : "not-allowed"};
 box-shadow:2px 2px 8px rgba(0,0,0,0.1);
 text-align:center;
-opacity:${canApply ? "1" : "0.4"};
+opacity:1;
 filter:${canApply ? "none" : "grayscale(100%)"};  // ⭐ 추가
 `;
 
