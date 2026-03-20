@@ -117,21 +117,30 @@ function loadMyResult(){
     return;
   }
 
-  fetch(API_URL + "?action=myresults&email=" + userEmail)
-  .then(res=>res.json())
-  .then(data=>{
+ fetch(API_URL + "?action=myresults&email=" + userEmail)
+.then(res => {
+  if(!res.ok) throw new Error("myresults 실패");
+  return res.json();
+})
+.then(data=>{
 
-    let assigned = data.find(r => r.result === "합격");
+  let assigned = data.find(r => r.result === "합격");
 
-    if(assigned){
-      assignedUniversity = assigned.university;
-    } else {
-      assignedUniversity = "";
-    }
+  if(assigned){
+    assignedUniversity = assigned.university;
+  } else {
+    assignedUniversity = "";
+  }
 
-    // 🔥 여기서 다음 단계 실행
-    loadStudents();
-  });
+  loadStudents();
+
+})
+.catch(err=>{
+  console.error("myresults 에러:", err);
+
+  // ⭐ 핵심: 실패해도 강제로 다음 실행
+  loadStudents();
+});
 
 }
   
