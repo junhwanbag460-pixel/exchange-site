@@ -106,9 +106,36 @@ renderCards();
 
 }
 
+let assignedUniversity = "";
+let userEmail = localStorage.getItem("userEmail");
 
+function loadMyResult(){
+
+  if(!userEmail){
+    alert("로그인이 필요합니다");
+    location.href="index.html";
+    return;
+  }
+
+  fetch(API_URL + "?action=myresults&email=" + userEmail)
+  .then(res=>res.json())
+  .then(data=>{
+
+    let assigned = data.find(r => r.result === "합격");
+
+    if(assigned){
+      assignedUniversity = assigned.university;
+    } else {
+      assignedUniversity = "";
+    }
+
+    // 🔥 여기서 다음 단계 실행
+    loadStudents();
+  });
+
+}
   
-loadStudents();
+loadMyResult();
 // setInterval(loadStatus,5000); ← 주석 처리
   
 </script>
@@ -145,16 +172,7 @@ function openModal(u){
 
   document.getElementById("modal").style.display="block";
 
-  let testChoices = [...myChoices];
-
-if(testChoices.length === 0){
-  testChoices = [u.name];
-}else{
-  testChoices[testChoices.length - 1] = u.name;
-}
-
-let assigned = simulateFullAssignment(testChoices);
-let result = (assigned === u.name);
+  let result = (assignedUniversity === u.name);
 
   let status = result ? "🟢 합격" : "🔴 탈락";
   let color = result ? "green" : "red";
@@ -167,6 +185,7 @@ let result = (assigned === u.name);
   "<br>정원: " + u.seats;
 
 }
+
 function closeModal(){
 document.getElementById("modal").style.display="none";
 }
@@ -194,11 +213,7 @@ function renderCards(){
 
   filtered.forEach(u=>{
 
-    let result = false;
-
-if(assignedUniversity === u.name){
-  result = true;
-}
+    let result = (assignedUniversity === u.name);
     let color = result ? "green" : "red";
 
     let card = document.createElement("div");
