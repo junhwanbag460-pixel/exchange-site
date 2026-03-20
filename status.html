@@ -223,6 +223,7 @@ else if(myBaseInfo.language === "INST"){
   // ⭐ 먼저 계산
 let cutoff = parseFloat(u.cutoff);
 
+// ⭐ 지원자 없는 경우 → cutoff 없음 처리
 if(isNaN(cutoff)){
   cutoff = null;
 }else{
@@ -260,7 +261,7 @@ let strategyColor = s.color;
   document.getElementById("modalTitle").innerHTML =
   u.name + " (" + u.country + ")" +
   "<br>내 점수: " + myScore +
-"<br>컷라인: " + (u.cutoff ? round2(parseFloat(u.cutoff)).toFixed(2) : "-") +
+"<br>컷라인: " + (cutoff !== null ? cutoff.toFixed(2) : "데이터 없음") +
   "<br>점수차: <span style='color:"+gapColor+"'>" + (gap !== null ? gapText : "데이터 없음") + "</span>" +
 "<br>지원전략: <span style='color:" + 
 (canApply ? strategyColor : "red") + "'>" + 
@@ -270,7 +271,7 @@ let strategyColor = s.color;
   : "지원 불가능"
 ) 
 
-+ "</span>"
++ "</span>" +
 "<br>지원자: " + u.applicants +
   "<br>정원: " + u.seats;
 
@@ -327,18 +328,18 @@ let canApply = true;
 // myBaseInfo 없으면 일단 통과 (에러 방지)
 if(typeof myBaseInfo !== "undefined"){
 
-  if(myBaseInfo.language === "TOEFL"){
-  if(!u.min_toefl || myBaseInfo.lang_score < u.min_toefl){
+if(myBaseInfo.language === "TOEFL"){
+  if(u.min_toefl && myBaseInfo.lang_score < u.min_toefl){
     canApply = false;
   }
 }
 else if(myBaseInfo.language === "IELTS"){
-  if(!u.min_ielts || myBaseInfo.lang_score < u.min_ielts){
+  if(u.min_ielts && myBaseInfo.lang_score < u.min_ielts){
     canApply = false;
   }
 }
 else if(myBaseInfo.language === "INST"){
-  if(!u.min_inst || myBaseInfo.lang_score < u.min_inst){
+  if(u.min_inst && myBaseInfo.lang_score < u.min_inst){
     canApply = false;
   }
 }
