@@ -196,16 +196,20 @@ let canApply = true;
 if(typeof myBaseInfo !== "undefined"){
 
   if(myBaseInfo.language === "TOEFL"){
-    if(myBaseInfo.lang_score < (u.min_toefl || 0)){
-      canApply = false;
-    }
+  if(!u.min_toefl || myBaseInfo.lang_score < u.min_toefl){
+    canApply = false;
   }
-
-  if(myBaseInfo.language === "IELTS"){
-    if(myBaseInfo.lang_score < (u.min_ielts || 0)){
-      canApply = false;
-    }
+}
+else if(myBaseInfo.language === "IELTS"){
+  if(!u.min_ielts || myBaseInfo.lang_score < u.min_ielts){
+    canApply = false;
   }
+}
+else if(myBaseInfo.language === "INST"){
+  if(!u.min_inst || myBaseInfo.lang_score < u.min_inst){
+    canApply = false;
+  }
+}
 
 }
 
@@ -220,12 +224,12 @@ if(typeof myBaseInfo !== "undefined"){
 let cutoff = parseFloat(u.cutoff);
 
 if(isNaN(cutoff)){
-  cutoff = round2(myScore);
+  cutoff = null;
 }else{
   cutoff = round2(cutoff);
 }
 
-let gap = round2(myScore - cutoff);
+let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
 
 if(!canApply){
   gap = null;
@@ -318,16 +322,20 @@ let canApply = true;
 if(typeof myBaseInfo !== "undefined"){
 
   if(myBaseInfo.language === "TOEFL"){
-    if(myBaseInfo.lang_score < (u.min_toefl || 0)){
-      canApply = false;
-    }
+  if(!u.min_toefl || myBaseInfo.lang_score < u.min_toefl){
+    canApply = false;
   }
-
-  if(myBaseInfo.language === "IELTS"){
-    if(myBaseInfo.lang_score < (u.min_ielts || 0)){
-      canApply = false;
-    }
+}
+else if(myBaseInfo.language === "IELTS"){
+  if(!u.min_ielts || myBaseInfo.lang_score < u.min_ielts){
+    canApply = false;
   }
+}
+else if(myBaseInfo.language === "INST"){
+  if(!u.min_inst || myBaseInfo.lang_score < u.min_inst){
+    canApply = false;
+  }
+}
 
 }
 
@@ -336,12 +344,12 @@ let cutoff = parseFloat(u.cutoff);
 
 // ⭐ cutoff 없으면 추정값 사용
 if(isNaN(cutoff)){
-  cutoff = round2(myScore);  // 기본값 (최소한 계산 가능하게)
+  cutoff = null;  // 기본값 (최소한 계산 가능하게)
 }else{
   cutoff = round2(cutoff);
 }
 
-let gap = round2(myScore - cutoff);
+let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
 
 if(!canApply){
   gap = null;
