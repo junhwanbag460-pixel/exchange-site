@@ -127,6 +127,14 @@ function loadMyResult(){
 })
 .then(data=>{
 
+  // ⭐⭐⭐ 추가
+if(data.length > 0){
+  myBaseInfo = {
+    language: data[0].language,
+    lang_score: Number(data[0].lang_score)
+  };
+}
+
   let assigned = data.find(r => r.result === "합격");
 
   if(assigned){
