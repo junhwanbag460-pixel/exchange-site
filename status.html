@@ -406,10 +406,6 @@ if(myBaseInfo === null){
 
   let card = document.createElement("div");
 
-  if(!canApply){
-  card.style.pointerEvents = "none"; // ⭐ 이게 가장 확실
-}
-
 card.style = `
 width:220px;
 border:1px solid #ddd;
@@ -429,9 +425,13 @@ filter:${canApply ? "none" : "grayscale(100%)"};  // ⭐ 추가
   <p>🔥 경쟁률: ${u.rate}</p>
 ${
   !canApply
-  ? `<p style="color:#ff0000;font-weight:900;font-size:16px">🚫 지원 불가능</p>`
+  ? `<p style="color:#ff0000 !important;font-weight:900;font-size:16px">🚫 지원 불가능</p>`
   : `
-    <p>📉 컷라인: ${u.cutoff || "-"}</p>
+    <p>📉 컷라인: ${
+  u.cutoff && !isNaN(parseFloat(u.cutoff))
+  ? round2(parseFloat(u.cutoff)).toFixed(2)
+  : "-"
+}</p>
 
     <p style="font-weight:bold;color:${gapColor}">
     📊 ${gap !== null ? gapText : "데이터 없음"}
