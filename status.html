@@ -344,119 +344,109 @@ if(typeof myBaseInfo === "undefined"){
     return;
   }
 
-  filtered.forEach(u=>{
+ filtered.forEach(u=>{
 
-    // ⭐ 지원 가능 여부
-let canApply = true;
+  let canApply = true;
 
-// myBaseInfo 없으면 일단 통과 (에러 방지)
-if(typeof myBaseInfo !== "undefined"){
+  if(typeof myBaseInfo !== "undefined"){
 
-if(myBaseInfo.language === "TOEFL"){
-  if(u.min_toefl !== undefined && u.min_toefl !== null && myBaseInfo.lang_score < u.min_toefl){
-    canApply = false;
+    if(myBaseInfo.language === "TOEFL"){
+      if(u.min_toefl !== undefined && u.min_toefl !== null && myBaseInfo.lang_score < u.min_toefl){
+        canApply = false;
+      }
+    }
+    else if(myBaseInfo.language === "IELTS"){
+      if(u.min_ielts !== undefined && u.min_ielts !== null && myBaseInfo.lang_score < u.min_ielts){
+        canApply = false;
+      }
+    }
+    else if(myBaseInfo.language === "기관TOEFL"){
+      if(u.min_inst !== undefined && u.min_inst !== null && myBaseInfo.lang_score < u.min_inst){
+        canApply = false;
+      }
+    }
   }
-}
-else if(myBaseInfo.language === "IELTS"){
-  if(u.min_ielts !== undefined && u.min_ielts !== null && myBaseInfo.lang_score < u.min_ielts){
-    canApply = false;
+
+  // ⭐ 여기부터 전부 forEach 안에 있어야 함
+  let cutoff = parseFloat(u.cutoff);
+
+  if(isNaN(cutoff)){
+    cutoff = null;
+  }else{
+    cutoff = round2(cutoff);
   }
-}
-else if(myBaseInfo.language === "기관TOEFL"){
-  if(u.min_inst !== undefined && u.min_inst !== null && myBaseInfo.lang_score < u.min_inst){
-    canApply = false;
+
+  let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
+
+  if(!canApply){
+    cutoff = null;
+    gap = null;
   }
-}
-}
 
-}
+  let gapText = "";
+  let gapColor = "#999";
 
-    // ⭐ 컷 대비 점수 차이 계산
-let cutoff = parseFloat(u.cutoff);
+  let s = getStrategy(gap);
+  let strategy = s.text;
+  let strategyColor = s.color;
 
-// ⭐ cutoff 없으면 추정값 사용
-if(isNaN(cutoff)){
-  cutoff = null;  // 기본값 (최소한 계산 가능하게)
-}else{
-  cutoff = round2(cutoff);
-}
+  if(gap !== null){
+    if(gap >= 1){
+      gapText = `+${gap.toFixed(2)} (안정)`;
+      gapColor = "green";
+    } else if(gap >= -1){
+      gapText = `${gap.toFixed(2)} (경계)`;
+      gapColor = "orange";
+    } else {
+      gapText = `${gap.toFixed(2)} (위험)`;
+      gapColor = "red";
+    }
+  }
 
-let gap = (cutoff !== null) ? round2(myScore - cutoff) : null;
+  let card = document.createElement("div");
 
-if(!canApply){
-  cutoff = null;
-  gap = null;
-}
-
-let gapText = "";
-let gapColor = "#999";
-
-  // ⭐ 지원 유형 판단
-let s = getStrategy(gap);
-let strategy = s.text;
-let strategyColor = s.color;
-
-if(gap !== null){
-  if(gap >= 1){
-    gapText = `+${gap.toFixed(2)} (안정)`;
-    gapColor = "green";
-  } else if(gap >= -1){
-    gapText = `${gap.toFixed(2)} (경계)`;
-    gapColor = "orange";
+  if(canApply){
+    card.onclick = () => openModal(u);
   } else {
-    gapText = `${gap.toFixed(2)} (위험)`;
-    gapColor = "red";
+    card.style.cursor = "not-allowed";
   }
-}
-    
-    let card = document.createElement("div");
 
-// ⭐ 지원 가능할 때만 클릭 가능
-if(canApply){
-  card.onclick = () => openModal(u);
-} else {
-  card.style.cursor = "not-allowed"; // 금지 커서
-};
+  card.style = `
+  width:220px;
+  border:1px solid #ddd;
+  border-radius:12px;
+  padding:12px;
+  cursor:${canApply ? "pointer" : "not-allowed"};
+  box-shadow:2px 2px 8px rgba(0,0,0,0.1);
+  text-align:center;
+  opacity:${canApply ? "1" : "0.4"};
+  `;
 
-    card.style = `
-width:220px;
-border:1px solid #ddd;
-border-radius:12px;
-padding:12px;
-cursor:${canApply ? "pointer" : "not-allowed"};
-box-shadow:2px 2px 8px rgba(0,0,0,0.1);
-text-align:center;
-opacity:${canApply ? "1" : "0.4"};
-`;
+  card.innerHTML = `
+  <h4>${u.name}</h4>
+  <p>🌍 ${u.country}</p>
+  <p>👥 ${u.applicants} / ${u.seats}</p>
+  <p>🔥 경쟁률: ${u.rate}</p>
+  <p>📉 컷라인: ${u.cutoff || "-"}</p>
 
-    card.innerHTML = `
-<h4>${u.name}</h4>
-<p>🌍 ${u.country}</p>
-<p>👥 ${u.applicants} / ${u.seats}</p>
-<p>🔥 경쟁률: ${u.rate}</p>
-<p>📉 컷라인: ${u.cutoff || "-"}</p>
+  <p style="font-weight:bold;color:${gapColor}">
+  📊 ${gap !== null ? gapText : "데이터 없음"}
+  </p>
 
-<p style="font-weight:bold;color:${gapColor}">
-📊 ${gap !== null ? gapText : "데이터 없음"}
-</p>
+  <p style="font-weight:bold;color:${
+    !canApply ? "red" : (gap !== null ? strategyColor : "#999")
+  }">
+  📌 ${
+    !canApply 
+      ? "지원 불가능"
+      : (gap !== null ? (strategy + " 지원") : "데이터 없음")
+  }
+  </p>
+  `;
 
-<p style="font-weight:bold;color:${
-  !canApply ? "red" : (gap !== null ? strategyColor : "#999")
-}">
-📌 ${
-  !canApply 
-    ? "지원 불가능"
-    : (gap !== null ? (strategy + " 지원") : "데이터 없음")
-}
-</p>
+  container.appendChild(card);
 
-`;
-
-    container.appendChild(card);
-
-  });
-}
-
+}); // ✅ 여기서 닫혀야 정상
 </script>
 
 </body>
