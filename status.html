@@ -120,43 +120,56 @@ function loadMyResult(){
     return;
   }
 
- fetch(API_URL + "?action=myresults&email=" + userEmail)
-.then(res => {
-  if(!res.ok) throw new Error("myresults 실패");
-  return res.json();
-})
-.then(data=>{
+  // 1️⃣ 기본 정보 가져오기 (지원 가능 여부용)
+  fetch(API_URL + "?action=student&email=" + userEmail)
+  .then(res => {
+    if(!res.ok) throw new Error("student 실패");
+    return res.json();
+  })
+  .then(data=>{
 
-  // ⭐⭐⭐ 추가
-if(data.length > 0){
-  myBaseInfo = {
-    language: data[0].language,
-    lang_score: Number(data[0].lang_score)
-  };
-}
+    if(data){
+      myBaseInfo = {
+        language: data.language,
+        lang_score: Number(data.lang_score)
+      };
+    } else {
+      myBaseInfo = {
+        language: "NONE",
+        lang_score: 0
+      };
+    }
 
-  let assigned = data.find(r => r.result === "합격");
+    // 2️⃣ 합격 대학 가져오기 (별도로)
+    return fetch(API_URL + "?action=myresults&email=" + userEmail);
 
-  if(assigned){
-    assignedUniversity = assigned.university;
-  } else {
+  })
+  .then(res => res.json())
+  .then(results => {
+
+    let assigned = (results || []).find(r => r.result === "합격");
+
+    if(assigned){
+      assignedUniversity = assigned.university;
+    } else {
+      assignedUniversity = "";
+    }
+
+    loadStudents();
+
+  })
+  .catch(err=>{
+    console.error("에러:", err);
+
+    myBaseInfo = {
+      language: "NONE",
+      lang_score: 0
+    };
+
     assignedUniversity = "";
-  }
 
-  loadStudents();
-
-})
-.catch(err=>{
-  console.error("myresults 에러:", err);
-
-  // ⭐ 추가 (이거 없으면 canApply 항상 true됨)
-  myBaseInfo = {
-    language: "NONE",
-    lang_score: 0
-  };
-
-  loadStudents();
-});
+    loadStudents();
+  });
 
 }
   
@@ -308,10 +321,11 @@ document.getElementById("modal").style.display="none";
 function renderCards(){
 
   // ⭐ 추가 (이거 없으면 계속 지금 문제 발생)
-  if(typeof myBaseInfo === "undefined"){
-    console.log("myBaseInfo 없음 → 렌더링 중단");
-    return;
-  }
+if(typeof myBaseInfo === "undefined"){
+  let container = document.getElementById("cardContainer");
+  container.innerHTML = "<div style='color:#999;font-size:18px'>⏳ 데이터 불러오는 중...</div>";
+  return;
+}
 
   let container = document.getElementById("cardContainer");
   container.innerHTML = "";
