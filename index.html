@@ -194,7 +194,7 @@ container.innerHTML += createSelect("writing","라이팅");
 }
 
 // 기관TOEFL
-if(type === "기관TOEFL"){
+if(type === "INST"){
 
 container.innerHTML += createSelect("listening","리스닝");
 container.innerHTML += createSelect("reading","리딩");
@@ -378,7 +378,7 @@ if(type == "TOEFL"){
     toefl = score;
 }
 
-if(type == "기관TOEFL"){
+if(type === "INST"){
     for(let i=0;i<table.length;i++){
         if(score >= table[i].inst){
             toefl = table[i].toefl;
