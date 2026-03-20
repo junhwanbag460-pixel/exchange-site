@@ -217,12 +217,12 @@ ById("lang_score").addEventListener("input", () => {
 function renderUniversities(data){
 
 let selected = {
-choice1: window.savedChoices?.choice1 || document.getElementById("choice1")?.value || "",
-choice2: window.savedChoices?.choice2 || document.getElementById("choice2")?.value || "",
-choice3: window.savedChoices?.choice3 || document.getElementById("choice3")?.value || "",
-choice4: window.savedChoices?.choice4 || document.getElementById("choice4")?.value || "",
-choice5: window.savedChoices?.choice5 || document.getElementById("choice5")?.value || ""
-};
+choice1: window.savedChoices?.choice1 || "",
+choice2: window.savedChoices?.choice2 || "",
+choice3: window.savedChoices?.choice3 || "",
+choice4: window.savedChoices?.choice4 || "",
+choice5: window.savedChoices?.choice5 || ""
+};;
 
 let selects=["choice1","choice2","choice3","choice4","choice5"];
 
@@ -494,9 +494,7 @@ fetch(API_URL + "?action=universities")
 
   renderDetailInputs();
 
- setTimeout(() => {
-    renderUniversities(getFilteredUniversities());
-  }, 0);
+renderUniversities(getFilteredUniversities());
 
 });
 }
@@ -517,7 +515,10 @@ function loadStudentData(){
 
 .then(data=>{
 
-if(!data) return;
+if(!data || !data.choice1){
+  window.savedChoices = null;
+  return;
+}
 
 if(data && data.choice1){
 
@@ -558,6 +559,22 @@ document.querySelectorAll("input, select")
 // 로그인 버튼은 살려둠
 document.querySelector(".g_id_signin").style.pointerEvents = "auto";
 }
+
+window.addEventListener("load", () => {
+
+  const savedEmail = localStorage.getItem("userEmail");
+
+  if(savedEmail){
+    userEmail = savedEmail;
+
+    enableInputs();
+
+    loadStudentData().then(() => {
+      loadUniversities();
+    });
+  }
+
+});    
 
 function enableInputs(){
 document.querySelectorAll("input, select")
