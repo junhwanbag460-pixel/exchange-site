@@ -634,6 +634,9 @@ document.getElementById("language").value = lang;
 renderDetailInputs();
 document.getElementById("lang_score").value = data.lang_score;
 
+// ⭐ 이 줄 추가 (핵심)
+lockInputs();
+
 // ⭐ 이것만 남김 (핵심)
 window.savedChoices = {
   choice1: data.choice1,
