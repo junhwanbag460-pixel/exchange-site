@@ -597,10 +597,9 @@ if(savedEmail && savedEmail.endsWith("@khu.ac.kr")){
 
   enableInputs();
 
-  loadStudentData().then(() => {
-    loadUniversities();
-  });
-}    
+  // ❗ 핵심: 데이터는 불러오지 않음
+  loadUniversities();
+}
   
 </script>
 
