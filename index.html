@@ -8,6 +8,29 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+<!-- ⭐ 여기 추가 -->
+<style>
+.choice-block {
+  margin-bottom: 20px;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.choice-block input {
+  display: block;
+  margin: 5px auto;
+  width: 250px;
+}
+
+.choice-block select {
+  display: block;
+  margin: 5px auto;
+  width: 350px;
+}
+</style>
+
 </head>
 
 <body>
@@ -62,25 +85,35 @@ data-auto_prompt="false">
 
 <div id="detailScores"></div>
   
-1지망<br>
-<input id="search1" placeholder="대학 검색"><br>
-<select id="choice1"></select>
+<div class="choice-block">
+  <div class="label">1지망</div>
+  <input id="search1" placeholder="대학 검색">
+  <select id="choice1"></select>
+</div>
 
-2지망<br>
-<input id="search2" placeholder="대학 검색"><br>
-<select id="choice2"></select>
+<div class="choice-block">
+  <div class="label">2지망</div>
+  <input id="search2" placeholder="대학 검색">
+  <select id="choice2"></select>
+</div>
 
-3지망<br>
-<input id="search3" placeholder="대학 검색"><br>
-<select id="choice3"></select>
+<div class="choice-block">
+  <div class="label">3지망</div>
+  <input id="search3" placeholder="대학 검색">
+  <select id="choice3"></select>
+</div>
 
-4지망<br>
-<input id="search4" placeholder="대학 검색"><br>
-<select id="choice4"></select>
+<div class="choice-block">
+  <div class="label">4지망</div>
+  <input id="search4" placeholder="대학 검색">
+  <select id="choice4"></select>
+</div>
 
-5지망<br>
-<input id="search5" placeholder="대학 검색"><br>
-<select id="choice5"></select>
+<div class="choice-block">
+  <div class="label">5지망</div>
+  <input id="search5" placeholder="대학 검색">
+  <select id="choice5"></select>
+</div>
 
 <button onclick="submitApplication()">지원 제출</button>
 
