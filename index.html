@@ -63,19 +63,24 @@ data-auto_prompt="false">
 <div id="detailScores"></div>
   
 1지망<br>
-<select id="choice1"></select><br><br>
+<input id="search1" placeholder="대학 검색"><br>
+<select id="choice1"></select>
 
 2지망<br>
-<select id="choice2"></select><br><br>
+<input id="search2" placeholder="대학 검색"><br>
+<select id="choice2"></select>
 
 3지망<br>
-<select id="choice3"></select><br><br>
+<input id="search3" placeholder="대학 검색"><br>
+<select id="choice3"></select>
 
 4지망<br>
-<select id="choice4"></select><br><br>
+<input id="search4" placeholder="대학 검색"><br>
+<select id="choice4"></select>
 
 5지망<br>
-<select id="choice5"></select><br><br>
+<input id="search5" placeholder="대학 검색"><br>
+<select id="choice5"></select>
 
 <button onclick="submitApplication()">지원 제출</button>
 
@@ -229,7 +234,13 @@ choice5: window.savedChoices?.choice5 || ""
 
 let selects=["choice1","choice2","choice3","choice4","choice5"];
 
-selects.forEach(id=>{
+selects.forEach((id, idx)=>{
+
+let searchValue = document.getElementById("search"+(idx+1))?.value?.toLowerCase() || "";
+
+let filteredData = data.filter(u =>
+  u.name.toLowerCase().includes(searchValue)
+);
 
 let select=document.getElementById(id);
 
@@ -238,10 +249,9 @@ select.innerHTML="";
 let empty=document.createElement("option");
 empty.value="";
 empty.text="미선택";
-
 select.appendChild(empty);
 
-data.forEach(u=>{
+filteredData.forEach(u=>{
 
 let option=document.createElement("option");
 
@@ -251,7 +261,6 @@ option.text=u.name;
 let score = parseFloat(document.getElementById("lang_score").value);
 let lang = document.getElementById("language").value;
 
-// ⭐ 추가
 if(lang === "INST") lang = "기관TOEFL";
 
 let blocked = false;
@@ -273,7 +282,7 @@ if(blocked){
 }
 
 if(selected[id] === u.name){
-option.selected = true;
+  option.selected = true;
 }
 
 select.appendChild(option);
@@ -281,7 +290,6 @@ select.appendChild(option);
 });
 
 });
-
 }
 
 function checkDuplicate(){
@@ -511,12 +519,16 @@ renderUniversities(getFilteredUniversities());
 }
 
 function lockInputs(){
+  document.getElementById("nickname").disabled = true;
+  document.getElementById("gpa").disabled = true;
+  document.getElementById("language").disabled = true;
+  document.getElementById("lang_score").disabled = true;
 
-document.getElementById("nickname").disabled = true;
-document.getElementById("gpa").disabled = true;
-document.getElementById("language").disabled = true;
-document.getElementById("lang_score").disabled = true;
-
+  // ⭐ 세부 성적도 잠금
+  ["listening","reading","speaking","writing","grammar"].forEach(id=>{
+    let el = document.getElementById(id);
+    if(el) el.disabled = true;
+  });
 }
 
 function loadStudentData(){
@@ -600,6 +612,16 @@ if(savedEmail && savedEmail.endsWith("@khu.ac.kr")){
   // ❗ 핵심: 데이터는 불러오지 않음
   loadUniversities();
 }
+
+// ⭐ 검색 입력 시 실시간 반영
+for(let i=1;i<=5;i++){
+  let input = document.getElementById("search"+i);
+  if(input){
+    input.addEventListener("input", ()=>{
+      renderUniversities(getFilteredUniversities());
+    });
+  }
+}    
   
 </script>
 
