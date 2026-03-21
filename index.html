@@ -568,7 +568,7 @@ return;
 renderDetailInputs();   // ⭐ 이거 추가 (초기 렌더 강제)
 
 function disableAllInputs(){
-  document.querySelectorAll("input, select, button")
+  document.querySelectorAll("input, select")
   .forEach(el => el.disabled = true);
 
   // 로그인 버튼만 클릭 가능
