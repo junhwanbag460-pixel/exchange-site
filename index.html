@@ -564,7 +564,6 @@ return;
 
 }
 
-disableAllInputs();
 // ⭐ 로그인 유지 복구
 renderDetailInputs();   // ⭐ 이거 추가 (초기 렌더 강제)
 
@@ -589,6 +588,19 @@ renderDetailInputs();
 }
 
 disableAllInputs();   // ⭐ 이 줄 추가    
+
+// ⭐⭐⭐ 로그인 유지 복구 (핵심) ⭐⭐⭐
+const savedEmail = localStorage.getItem("userEmail");
+
+if(savedEmail && savedEmail.endsWith("@khu.ac.kr")){
+  userEmail = savedEmail;
+
+  enableInputs();
+
+  loadStudentData().then(() => {
+    loadUniversities();
+  });
+}    
   
 </script>
 
