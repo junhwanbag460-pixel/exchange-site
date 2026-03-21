@@ -81,6 +81,8 @@ data-auto_prompt="false">
 
 <script>
 
+localStorage.removeItem("userEmail");  // ⭐ 이 줄 추가    
+
 const API_URL = "https://script.google.com/macros/s/AKfycbyNNd5JH9sAqXzl85GvYqImaZOpszJmt9rj_IoZMHnzxuxsIesQwwT6qxWNouwGvjdJZA/exec";
 
 /* ⭐⭐⭐ 여기 추가 ⭐⭐⭐ */
@@ -569,28 +571,12 @@ disableAllInputs();
 renderDetailInputs();   // ⭐ 이거 추가 (초기 렌더 강제)
 
 function disableAllInputs(){
-document.querySelectorAll("input, select")
-.forEach(el => el.disabled = true);
+  document.querySelectorAll("input, select, button")
+  .forEach(el => el.disabled = true);
 
-// 로그인 버튼은 살려둠
-document.querySelector(".g_id_signin").style.pointerEvents = "auto";
-}
-
-window.addEventListener("load", () => {
-
-  const savedEmail = localStorage.getItem("userEmail");
-
-  if(savedEmail){
-    userEmail = savedEmail;
-
-    enableInputs();
-
-    loadStudentData().then(() => {
-      loadUniversities();
-    });
-  }
-
-});    
+  // 로그인 버튼만 클릭 가능
+  document.querySelector(".g_id_signin").style.pointerEvents = "auto";
+} 
 
 function enableInputs(){
 document.querySelectorAll("input, select")
@@ -603,6 +589,8 @@ if(!ById("language").value){
 
 renderDetailInputs();
 }
+
+disableAllInputs();   // ⭐ 이 줄 추가    
   
 </script>
 
