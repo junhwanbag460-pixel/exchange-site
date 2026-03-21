@@ -589,9 +589,13 @@ fetch(API_URL + "?action=universities")
 
   universityList = data;
 
-  renderDetailInputs();
-
+renderDetailInputs();
 renderUniversities(getFilteredUniversities());
+
+// ⭐ 이 줄 추가 (핵심)
+if(window.savedChoices){
+  lockInputs();
+}
 
 });
 }
@@ -678,6 +682,11 @@ if(!ById("language").value){
 }
 
 renderDetailInputs();
+
+// ⭐ 추가 (이미 제출된 사용자면 다시 잠금)
+if(window.savedChoices){
+  lockInputs();
+}
 }
 
 disableAllInputs();   // ⭐ 이 줄 추가    
