@@ -29,6 +29,46 @@
   margin: 5px auto;
   width: 350px;
 }
+
+<style>
+.choice-block {
+  margin-bottom: 20px;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.choice-block input {
+  display: block;
+  margin: 5px auto;
+  width: 250px;
+}
+
+.choice-block select {
+  display: block;
+  margin: 5px auto;
+  width: 350px;
+}
+
+/* ⭐ 여기부터 추가 */
+.suggest-box {
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 350px;
+  margin: 0 auto;
+  background: white;
+}
+
+.suggest-item {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.suggest-item:hover {
+  background: #eee;
+}
 </style>
 
 </head>
@@ -88,31 +128,36 @@ data-auto_prompt="false">
 <div class="choice-block">
   <div class="label">1지망</div>
   <input id="search1" placeholder="대학 검색">
-  <select id="choice1"></select>
+<div id="suggest1" class="suggest-box"></div>
+<select id="choice1"></select>
 </div>
 
 <div class="choice-block">
   <div class="label">2지망</div>
   <input id="search2" placeholder="대학 검색">
-  <select id="choice2"></select>
+<div id="suggest2" class="suggest-box"></div>
+<select id="choice2"></select>
 </div>
 
 <div class="choice-block">
   <div class="label">3지망</div>
   <input id="search3" placeholder="대학 검색">
-  <select id="choice3"></select>
+<div id="suggest3" class="suggest-box"></div>
+<select id="choice3"></select>
 </div>
 
 <div class="choice-block">
   <div class="label">4지망</div>
   <input id="search4" placeholder="대학 검색">
-  <select id="choice4"></select>
+<div id="suggest4" class="suggest-box"></div>
+<select id="choice4"></select>
 </div>
 
 <div class="choice-block">
   <div class="label">5지망</div>
   <input id="search5" placeholder="대학 검색">
-  <select id="choice5"></select>
+<div id="suggest5" class="suggest-box"></div>
+<select id="choice5"></select>
 </div>
 
 <button onclick="submitApplication()">지원 제출</button>
@@ -648,13 +693,44 @@ if(savedEmail && savedEmail.endsWith("@khu.ac.kr")){
 
 // ⭐ 검색 입력 시 실시간 반영
 for(let i=1;i<=5;i++){
+
   let input = document.getElementById("search"+i);
+  let box = document.getElementById("suggest"+i);
+
   if(input){
+
     input.addEventListener("input", ()=>{
+
+      // select 필터 유지
       renderUniversities(getFilteredUniversities());
+
+      let value = input.value.toLowerCase();
+
+      let filtered = universityList.filter(u =>
+        u.name.toLowerCase().includes(value)
+      );
+
+      box.innerHTML = "";
+
+      filtered.slice(0,10).forEach(u=>{
+
+        let div = document.createElement("div");
+        div.className = "suggest-item";
+        div.innerText = u.name;
+
+        div.onclick = ()=>{
+          document.getElementById("choice"+i).value = u.name;
+          input.value = u.name;
+          box.innerHTML = "";
+        };
+
+        box.appendChild(div);
+      });
+
     });
+
   }
-}    
+}
   
 </script>
 
