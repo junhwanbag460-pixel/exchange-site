@@ -58,32 +58,7 @@ div, p, h1, h2, h3, h4, span, input {
 
 <body>
 
-<h2>내 지원 결과</h2>
-
-<input id="searchBox" placeholder="국가 또는 대학 검색" style="
-display:block;
-margin:20px auto;
-padding:10px;
-width:300px;
-border-radius:8px;
-border:1px solid #ccc;
-">
-
-<div id="searchResults" style="
-display:flex;
-flex-wrap:wrap;
-gap:15px;
-justify-content:center;
-margin-top:20px;
-"></div>
-
-<div id="emptyMessage" style="
-text-align:center;
-color:#666;
-margin-top:20px;
-">
-🔍 검색하면 대학이 표시됩니다
-</div>  
+<h2>내 지원 결과</h2>  
 
 <h3 id="expectedResult" style="color:blue"></h3>
 
@@ -601,7 +576,6 @@ function loadStatusData(callback){
   statusData = data;
 
   callback();
-renderSearchResults(); // 🔥 이거 추가
 })
   .catch(()=>{
     console.error("status 불러오기 실패");
@@ -635,17 +609,6 @@ function calculatePredictedRange(university){
 }  
 
 let debounceTimer;
-
-document.getElementById("searchBox").addEventListener("keyup", function(){
-
-  clearTimeout(debounceTimer);
-
-  debounceTimer = setTimeout(()=>{
-    loadProbabilityCards();
-    renderSearchResults();
-  }, 300);
-
-});
 
 function renderSearchResults(){
 
