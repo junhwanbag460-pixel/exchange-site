@@ -114,11 +114,11 @@ margin-top:20px;
 <h3>📊 내 점수 기준 추천 대학</h3>
 
 <div style="margin:15px;">
-  <button onclick="selectType('상향')">🔵 상향</button>
+  <button onclick="selectType('상향')">🔴 상향</button>
   <button onclick="selectType('적정')">🟢 적정</button>
-  <button onclick="selectType('하향')">🔴 하향</button>
+  <button onclick="selectType('하향')">🔵 하향</button>
 </div>  
-
+  
 <table border="1" style="margin:auto; text-align:center;">
 <thead>
 <tr>
@@ -485,13 +485,13 @@ filtered.slice(0,5).forEach(u=>{
   let text="";
 
   if(u.type === "상향"){
-    text="🔵 상향";
+    text="🔴 상향";
     color="blue";
   }else if(u.type === "적정"){
     text="🟢 적정";
     color="green";
   }else{
-    text="🔴 하향";
+    text="🔵 하향";
     color="red";
   }
 
