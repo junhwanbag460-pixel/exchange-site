@@ -449,9 +449,24 @@ let table=document.getElementById("recommendTable");
 table.innerHTML="";
 
 // ✅ cutoff 있는 대학만
-let candidates = statusData.filter(u =>
-  u.cutoff && !isNaN(Number(u.cutoff))
-);
+let myLang = myBaseInfo.language;
+
+// ⭐ 프론트 기준 맞추기
+if(myLang === "INST") myLang = "기관TOEFL";
+
+let candidates = statusData.filter(u => {
+
+  // 1️⃣ 컷라인 있는 대학만
+  if(!(u.cutoff && !isNaN(Number(u.cutoff)))) return false;
+
+  // 2️⃣ 어학 조건 필터 (🔥 핵심)
+  if(u.language_requirement){
+    let allowed = u.language_requirement.split(",").map(v => v.trim());
+    return allowed.includes(myLang);
+  }
+
+  return true;
+});
 
 // ✅ 점수차(gap) 계산
 candidates.forEach(u=>{
