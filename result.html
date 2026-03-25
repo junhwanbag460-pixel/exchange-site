@@ -77,8 +77,8 @@ margin-top:20px;
 <table border="1" style="margin:auto;">
 <thead>
 <tr>
-<th>대학</th>
 <th>지망</th>
+<th>대학</th>
 <th>총점</th>
 <th>순위</th>
 <th>결과</th>
@@ -191,15 +191,17 @@ data.forEach((r, i)=>{
   // ⭐ 이건 모든 데이터에서 실행
   let row=document.createElement("tr");
 
-  row.innerHTML=`
-  <td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
-  ▶ ${r.university}
-  </td>
-  <td>${r.choice_rank}</td>
-  <td>${Number(r.total).toFixed(2)}</td>
-  <td>${r.rank}</td>
-  <td>${r.result === "미선발" ? "" : r.result}</td>
-  `;
+ row.innerHTML=`
+<td>${r.choice_rank}</td>
+
+<td class="uni" data-uni="${r.university}" style="cursor:pointer;color:blue">
+▶ ${r.university}
+</td>
+
+<td>${Number(r.total).toFixed(2)}</td>
+<td>${r.rank}</td>
+<td>${r.result === "미선발" ? "" : r.result}</td>
+`;
 
   table.appendChild(row);
 
