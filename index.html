@@ -119,7 +119,7 @@ data-auto_prompt="false">
 <br><br>
 
 어학 점수<br>
-<input id="lang_score" type="number" step="0.1">
+<input id="lang_score" type="number" step="1" min="0">
 
 <br><br>
 
@@ -220,11 +220,13 @@ let selectedLang = document.getElementById("language").value || "TOEFL";
 // ⭐ 핵심 추가
 if(selectedLang === "INST") selectedLang = "기관TOEFL";
 let score = parseFloat(document.getElementById("lang_score").value);
+let language = document.getElementById("language").value;  
 
 return universityList.filter(u => {
 
   // 점수 없으면 어학 종류만 필터
   if(isNaN(score)) {
+
   // 점수 없을 때는 "어학 종류만" 필터
   if(u.language_requirement){
     let allowed = u.language_requirement.split(",").map(v => v.trim());
@@ -298,8 +300,9 @@ container.innerHTML += createSelect("grammar","문법");
 
 // ⭐ 여기 추가 (fetch 끝나고 바로 밑)
 ById("language").addEventListener("change", () => {
+updateScoreLimit();   // ⭐ 추가
 renderUniversities(getFilteredUniversities());
-renderDetailInputs(); // ⭐ 추가
+renderDetailInputs();
 });
 
 ById("lang_score").addEventListener("input", () => {
@@ -528,6 +531,7 @@ return;
 /* 점수 입력 검사 */
 let gpa = parseFloat(document.getElementById("gpa").value);
 let score = parseFloat(document.getElementById("lang_score").value);
+let language = document.getElementById("language").value;  
 
 if(isNaN(gpa) || gpa < 0 || gpa > 4.3){
 alert("GPA는 0~4.3 사이로 입력하세요");
@@ -541,12 +545,38 @@ btn.disabled = false;
 return;
 }
 
+// 🔥 범위 + 단위 검증 (여기에 넣어야 정답)
+
+if(language === "TOEFL" && (score < 0 || score > 120)){
+  alert("토플은 0~120점 사이입니다");
+  btn.disabled = false;
+  return;
+}
+
+if(language === "IELTS"){
+  if(score < 0 || score > 9){
+    alert("아이엘츠는 0~9점 사이입니다");
+    btn.disabled = false;
+    return;
+  }
+
+  if(score * 2 !== Math.round(score * 2)){
+    alert("아이엘츠는 0.5 단위만 가능합니다");
+    btn.disabled = false;
+    return;
+  }
+}
+
+if(language === "INST" && (score < 0 || score > 677)){
+  alert("기관토플은 0~677점 사이입니다");
+  btn.disabled = false;
+  return;
+}  
+
 if(!checkDuplicate()){
 btn.disabled = false;
 return;
 }
-
-let language = document.getElementById("language").value;
 
 // ⭐ 이거 추가 (핵심)
 if(language === "INST") language = "기관TOEFL";    
@@ -599,6 +629,7 @@ fetch(API_URL + "?action=universities")
   universityList = data;
 
 renderDetailInputs();
+updateScoreLimit();   // ⭐ 이거 반드시 추가  
 renderUniversities(getFilteredUniversities());
 
 // ⭐ 이 줄 추가 (핵심)
@@ -753,6 +784,47 @@ for(let i=1;i<=5;i++){
 
   }
 }
+
+function updateScoreLimit(){
+
+  let type = ById("language").value;
+  let input = ById("lang_score");
+
+  if(type === "TOEFL"){
+    input.max = 120;
+    input.min = 0;
+    input.step = 1;
+  }
+
+  if(type === "IELTS"){
+    input.max = 9;
+    input.min = 0;
+    input.step = 0.5;
+  }
+
+  if(type === "INST"){
+    input.max = 677;
+    input.min = 0;
+    input.step = 1;
+  }
+}
+
+function validateScoreUnit(){
+
+  let type = ById("language").value;
+  let score = parseFloat(ById("lang_score").value);
+
+  if(type === "IELTS"){
+
+    // 0.5 단위 검사
+    if(score * 2 !== Math.round(score * 2)){
+      alert("아이엘츠 점수는 0.5 단위로만 입력 가능합니다");
+      return false;
+    }
+  }
+
+  return true;
+}  
   
 </script>
 
